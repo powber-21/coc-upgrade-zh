@@ -178,6 +178,11 @@ tbody tr:last-child td { border-bottom: 0; }
 @keyframes hop { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-8px); } }
 @media (prefers-reduced-motion: reduce) { .loading i { animation: none; } }
 .seo { display: none; }
+.faq { display: grid; gap: 12px; max-width: 720px; }
+.faq section { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; }
+.faq h2 { margin: 0 0 6px; font-size: 17px; font-weight: 900; }
+.faq p { margin: 0; color: var(--muted); line-height: 1.7; }
+.faq a { color: var(--accent); font-weight: 700; overflow-wrap: anywhere; }
 footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; padding-top: 14px; border-top: 2px dashed var(--line); }
 footer p { margin: 0; max-width: 80ch; }
 footer a { color: inherit; }

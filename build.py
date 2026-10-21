@@ -388,7 +388,10 @@ def main():
 PRERENDER_JS = """<script type="application/json" id="out"></script>
 <script>
 const out = {};
-if (BASE) for (const id in DATA.items) out[id] = { view: itemView(DATA.items[id]) + footer(), crumbs: $("#crumbs").innerHTML };
+if (BASE) {
+  for (const id in DATA.items) out[id] = { view: itemView(DATA.items[id]) + footer(), crumbs: $("#crumbs").innerHTML };
+  out.faq = { view: faqView() + footer(), crumbs: $("#crumbs").innerHTML };
+}
 else out[""] = { view: landingView() + footer(), crumbs: $("#crumbs").innerHTML };
 document.getElementById("out").textContent = JSON.stringify(out).replace(/</g, "\\\\u003c");
 </script>"""
@@ -495,9 +498,12 @@ def write_site(data):
                   + (f"<p>{esc(it['desc'])}</p>" if it.get("desc") else "") + '<p><a href="../">回到部落衝突升級數據首頁</a></p>')
         page(f"{uid}/", "../", uid, title, desc, "" if uid in pre else static)
 
+    page("faq/", "../", "faq", "常見問題｜部落衝突數據",
+         "部落衝突數據網站的常見問題：資料來源、更新頻率、中文名稱、怎麼加入手機主畫面。", "")
+
     make_share_images()
     make_card_art()
-    write_seo_files(list(items))
+    write_seo_files(list(items) + ["faq"])
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 
