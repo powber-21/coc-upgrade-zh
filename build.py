@@ -274,11 +274,11 @@ def make_card_art():
 def make_share_images():
     """產生 LINE / 社群分享縮圖 (og.png) 與手機主畫面圖示 (apple-touch-icon.png)。"""
     th = "images/home/town-hall/normal/level-18.png"
-    og = _gradient(1200, 630, (120, 190, 90), (40, 95, 45)).convert("RGBA")
-    _paste(og, "images/home/heroes/barbarian-king/icon.png", 440, 270, 660)
-    _paste(og, "images/home/heroes/archer-queen/icon.png", 440, 930, 660)
-    _paste(og, th, 520, 600, 610)
-    og.convert("RGB").save(os.path.join(OUT, "og.png"), optimize=True)
+    # 分享縮圖用首頁「家鄉」卡片的插圖，縮到 630 高、左右置中裁成 1200 寬
+    og = Image.open(os.path.join(HERE, "art", "home.jpg")).convert("RGB")
+    og = og.resize((round(og.width * 630 / og.height), 630), Image.LANCZOS)
+    x = (og.width - 1200) // 2
+    og.crop((x, 0, x + 1200, 630)).save(os.path.join(OUT, "og.png"), optimize=True)
 
     icon = _gradient(180, 180, (255, 214, 102), (214, 140, 20)).convert("RGBA")
     _paste(icon, th, 150, 90, 168)
