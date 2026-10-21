@@ -92,12 +92,8 @@ function value(v) {
 
 let discount = 0;
 try { discount = +localStorage.getItem("coc-pass") || 0; } catch (e) {}
-$("#pass").value = String(discount);
-$("#pass").addEventListener("change", e => {
-  discount = +e.target.value;
-  try { localStorage.setItem("coc-pass", discount); } catch (e) {}
-  render();
-});
+const passBar = () => `<div class="seg4" role="group" aria-label="月卡折扣">${[0, 10, 15, 20].map(d =>
+  `<button type="button" data-pass="${d}" aria-pressed="${d === discount}">${d ? `-${d}%` : "無折扣"}</button>`).join("")}</div>`;
 
 const fmtN = n => typeof n === "number" ? (Number.isInteger(n) ? n.toLocaleString("en-US") : String(+n.toFixed(3))) : n;
 function fmtT(s) {
@@ -109,15 +105,19 @@ function fmtT(s) {
 const ORE_COL = { upgradeShinyOre: "Shiny Ore", upgradeGlowingOre: "Glowy Ore", upgradeStarryOre: "Starry Ore" };
 const resIcon = r => r ? r.split(" or ").map(x => DATA.res[x] ? `<img class="ri" src="${DATA.res[x]}" alt="${esc(value(x))}" title="${esc(value(x))}">` : "").join("") : "";
 const off = x => discount ? x * (100 - discount) / 100 : x;
+// 費用用「萬」：25,000,000 → 2,500萬
+const wan = n => n >= 1e4 ? (n >= 1e7 ? Math.round(n / 1e4).toLocaleString("en-US") : String(+(n / 1e4).toFixed(2))) + "萬" : n.toLocaleString("en-US");
+const resClass = r => "c-" + (r || "").split(" or ")[0].toLowerCase().replace(/ /g, "-");
 
 function cell(v, col) {
   if (v === null || v === undefined) return "";
   if (typeof v === "object" && "t" in v) return `<span class="${discount && v.t ? "disc" : ""}">${fmtT(off(v.t))}</span>`;
   if (typeof v === "object" && "c" in v) {
     const c = typeof v.c === "number" ? Math.round(off(v.c)) : v.c;
-    return `<span class="${discount && v.c ? "disc" : ""}">${fmtN(c)}</span>${resIcon(v.r)}`;
+    if (c === 0) return "—";
+    return `<span class="cost ${resClass(v.r)}">${resIcon(v.r)}${typeof c === "number" ? wan(c) : esc(c)}</span>`;
   }
-  if (/Ore$/.test(col) && typeof v === "number") return `${fmtN(v)}${resIcon(ORE_COL[col])}`;
+  if (/Ore$/.test(col) && typeof v === "number") return `<span class="cost">${resIcon(ORE_COL[col])}${fmtN(v)}</span>`;
   if (Array.isArray(v)) return esc(v.map(value).join("、"));
   return esc(fmtN(value(v)));
 }
@@ -203,7 +203,7 @@ for (const [v, cfg] of Object.entries(VILLAGES))
   for (const [t, , fn] of cfg.tabs)
     for (const s of fn()) for (const it of s.items) HOME_OF[it.id] ||= { v, t, sec: s.title };
 
-let state = { sub: {}, hall: 0, hallBase: "home" };
+let state = { sub: {}, hall: 0, hallBase: "home", my: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
@@ -214,13 +214,14 @@ function crumbs(parts) {
 
 function landingView() {
   crumbs([]);
-  const art = name => `<img src="${BASE}card-${name}.webp" alt="" width="800" height="396">`;
-  const cards = Object.entries(VILLAGES).map(([v, c]) =>
-    `<a class="vcard v-${v}" href="${BASE}#${v}"><div class="vt"><h2>${c.zh}</h2><p>${c.tag}</p></div><div class="art">${art(v)}</div></a>`);
-  cards.push(`<a class="vcard v-hall" href="${BASE}#hall"><div class="vt"><h2>依大本營等級</h2><p>選等級，查每樣東西能升到幾級</p></div>
-    <div class="art">${art("hall")}</div></a>`);
-  return `<div class="intro"><h1>升級數據</h1><p>部落衝突所有建築、兵種、法術、英雄與裝備的升級費用、時間和屬性。右上角可以套用月卡折扣。</p></div>
-    <div class="vcards">${cards.join("")}</div>`;
+  const card = (v, title, tag, big) => `<a class="vcard${big ? " big" : ""}" href="${BASE}#${v}">
+    <img src="${BASE}card-${v}.webp" alt="" width="800" height="396"><div class="vt"><h2>${title}</h2><p>${tag}</p></div></a>`;
+  const V = VILLAGES;
+  return `<div class="intro"><h1>升級數據</h1><p>部落衝突所有建築、兵種、法術、英雄與裝備的升級費用、時間和屬性。</p></div>
+    <div class="passbar"><div class="lbl">月卡折扣</div>${passBar()}</div>
+    <div class="vcards">${card("home", V.home.zh, V.home.tag, true)}${card("builder", V.builder.zh, V.builder.tag, true)}
+      ${card("clan-capital", V["clan-capital"].zh, V["clan-capital"].tag)}${card("hall", "依大本營等級", "每樣東西能升到幾級")}</div>
+    <section><h2 class="group">英雄</h2><div class="grid heroes">${G("home/heroes").map(it => tile(it)).join("")}</div></section>`;
 }
 
 function villageView(v, tab) {
@@ -229,7 +230,7 @@ function villageView(v, tab) {
   state.sub[v] = cur[0]; save();
   crumbs([[cfg.zh]]);
   const sections = cur[2]().filter(s => s.items.length);
-  return `<nav class="subtabs" aria-label="${cfg.zh}分類">${cfg.tabs.map(([k, t]) => `<a href="${BASE}#${v}.${k}" aria-current="${k === cur[0] ? "page" : "false"}">${t}</a>`).join("")}</nav>
+  return `<nav class="subtabs band" aria-label="${cfg.zh}分類">${cfg.tabs.map(([k, t]) => `<a href="${BASE}#${v}.${k}" aria-current="${k === cur[0] ? "page" : "false"}">${t}</a>`).join("")}</nav>
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}<span>${s.items.length}</span></h2><div class="grid">${s.items.map(it => tile(it)).join("")}</div></section>`).join("")}`;
 }
 
@@ -276,17 +277,35 @@ function itemView(it) {
   }).join("")}</dl>` : "";
   const used = [...new Set(it.tables.flatMap(t => t.rows.flatMap(r => r.flatMap((v, i) =>
     v && typeof v === "object" && "c" in v ? v.r.split(" or ") : (i && ORE_COL[t.cols[i - 1]] && v ? [ORE_COL[t.cols[i - 1]]] : [])))))];
+  // 我的大本營：表中超過這個大本營能升的等級會變淡
+  const isHall = it.id === "home-town-hall" || it.id === "builder-builder-hall";
+  const hm = !isHall && (it.base === "home" || it.base === "builder") && it.hallMax ? it.hallMax : null;
+  const hallName = it.base === "builder" ? "建築大師基地" : "大本營";
+  const my = hm ? Math.min(state.my[it.base] || hm.length, hm.length) : 0;
+  const myMax = hm ? hm[my - 1] || 0 : Infinity;
+  const levels = it.tables.flatMap(t => t.rows.map(r => r[0]).filter(x => typeof x === "number"));
+  const top = levels.length ? Math.max(...levels) : 0;
+  const panel = hm || used.length ? `<div class="panel">
+    ${hm ? `<div class="row"><span class="lbl">我的${hallName}</span><div class="step">
+      <button type="button" data-my="-1" data-b="${it.base}" data-n="${hm.length}" aria-label="${hallName}降一級"${my <= 1 ? " disabled" : ""}>−</button>
+      <span class="n">${my}</span>
+      <button type="button" data-my="1" data-b="${it.base}" data-n="${hm.length}" aria-label="${hallName}升一級"${my >= hm.length ? " disabled" : ""}>+</button></div></div>
+      <div class="say">${hallName} <b>${my}</b> ${myMax ? `可升到 <b class="hl">Lv ${myMax}</b>，表中淡色的等級需要更高的${hallName}。` : "還不能使用。"}</div>` : ""}
+    ${hm && used.length ? "<hr>" : ""}
+    ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>等級</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr><td>${r[0] ?? ""}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
-  return `${cfg ? `<a class="back" href="${BASE}#${where.v}.${where.t}">‹ 返回${esc(cfg.zh)} · ${esc(tabName)}</a>` : ""}
-    <div class="hero">${img(it)}<div><div class="crumb">${esc(cfg ? cfg.zh : "")} · ${esc(where ? where.sec : "")}</div>
-      <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div></div>
+    <tbody>${t.rows.map(r => `<tr${typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${typeof r[0] === "number" ? `<span class="lvb">${r[0]}</span>` : esc(r[0] ?? "")}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+  return `<div class="hero band"><div class="pic">${img(it)}</div>
+      <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
+      <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>
+      ${top ? `<div class="max">最高<b>${top}</b></div>` : ""}</div>
     ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
-    ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))}</a>`).join("")}</div>` : ""}
+    ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))} ›</a>`).join("")}</div>` : ""}
     ${attrHtml}
-    ${used.length ? `<div class="legend">${used.map(r => `<span>${resIcon(r)}${esc(value(r))}</span>`).join("")}${discount ? `<span class="disc">已套用月卡 -${discount}%</span>` : ""}</div>` : ""}
+    ${panel}
+    ${discount && used.length ? `<p class="disc" style="margin:0">已套用月卡 -${discount}%</p>` : ""}
     ${tables}`;
 }
 
@@ -330,6 +349,16 @@ function render() {
     v.innerHTML = landingView() + footer();
   }
 }
+// 月卡折扣和「我的大本營」按鈕
+$("#view").addEventListener("click", e => {
+  const p = e.target.closest("[data-pass]");
+  if (p) { discount = +p.dataset.pass; try { localStorage.setItem("coc-pass", discount); } catch (err) {} render(); return; }
+  const m = e.target.closest("[data-my]");
+  if (m) {
+    const b = m.dataset.b, n = +m.dataset.n;
+    state.my[b] = Math.max(1, Math.min(n, (state.my[b] || n) + +m.dataset.my)); save(); render();
+  }
+});
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);
 render();
