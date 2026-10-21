@@ -166,7 +166,11 @@ def attrs(d):
     return out
 
 
-def thumb(rel, size=88):
+IMAGES = {}  # 縮圖檔名 -> 內容，write_site 時寫到 site/img/
+
+
+def thumb(rel, size=88, inline=False):
+    """縮小成 webp。項目圖存成獨立檔案（img/<內容雜湊>.webp，看到才下載）；inline=True 時直接內嵌（資源小圖示）。"""
     if not rel:
         return None
     p = os.path.join(SRC, rel)
@@ -176,7 +180,11 @@ def thumb(rel, size=88):
     im.thumbnail((size, size), Image.LANCZOS)
     buf = io.BytesIO()
     im.save(buf, "WEBP", quality=80, method=6)
-    return "data:image/webp;base64," + base64.b64encode(buf.getvalue()).decode()
+    if inline:
+        return "data:image/webp;base64," + base64.b64encode(buf.getvalue()).decode()
+    name = f"img/{hashlib.sha1(buf.getvalue()).hexdigest()[:10]}.webp"
+    IMAGES[name] = buf.getvalue()
+    return name
 
 
 # 資源圖示（遊戲內圖案），鍵是資料裡的資源名稱
@@ -373,7 +381,7 @@ def main():
     for it in items.values():
         it.pop("_levels", None)
 
-    data = {"groups": groups, "items": items, "res": {k: thumb(v, 48) for k, v in RES_ICONS.items()}}
+    data = {"groups": groups, "items": items, "res": {k: thumb(v, 48, inline=True) for k, v in RES_ICONS.items()}}
     write_site(data)
 
 
@@ -440,6 +448,9 @@ def write_site(data):
     ver = hashlib.sha1((data_js + app_js + css).encode()).hexdigest()[:8]
     for name, text in (("data.js", data_js), ("app.js", app_js), ("styles.css", css)):
         open(os.path.join(OUT, name), "w", encoding="utf8").write(text)
+    os.makedirs(os.path.join(OUT, "img"))
+    for name, content in IMAGES.items():
+        open(os.path.join(OUT, name), "wb").write(content)
     shell = open(os.path.join(HERE, "src/shell.html"), encoding="utf8").read()
     items, groups = data["items"], data["groups"]
     group_zh = {g["key"]: g["zh"] for g in groups}

@@ -1,4 +1,5 @@
 const DATA = window.DATA;
+window.APP_READY = true;
 // 根目錄的頁面 BASE 是空字串；項目頁在子資料夾裡，BASE 是 "../"
 const BASE = document.documentElement.dataset.base || "";
 const PAGE_ITEM = document.documentElement.dataset.item || "";
@@ -121,7 +122,7 @@ function cell(v, col) {
   return esc(fmtN(value(v)));
 }
 
-const img = (it, cls = "") => it.img ? `<img src="${it.img}" alt="" class="${cls}" loading="lazy">` : `<div class="noimg ${cls}">${esc((it.zh || it.en)[0])}</div>`;
+const img = (it, cls = "") => it.img ? `<img src="${BASE}${it.img}" alt="" class="${cls}" loading="lazy">` : `<div class="noimg ${cls}">${esc((it.zh || it.en)[0])}</div>`;
 const nameOf = it => it.zh || it.en;
 
 function tile(it, extra = "", dim = false) {

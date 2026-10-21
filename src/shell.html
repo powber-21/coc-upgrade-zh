@@ -43,6 +43,12 @@
   </div>
 </header>
 <main><div class="wrap" id="view">__STATIC__</div></main>
+<script>
+// 程式還在下載時就點了連結：先顯示「載入中」，下載完 app.js 會畫出正確的頁面
+function showLoading() { if (!window.APP_READY) document.getElementById("view").innerHTML = '<div class="loading" role="status">載入中<i></i><i></i><i></i></div>'; }
+addEventListener("hashchange", function () { showLoading(); scrollTo(0, 0); });
+if (location.hash.length > 1) showLoading();
+</script>
 
 <script src="__BASE__data.js?v=__VER__"></script>
 <script src="__BASE__app.js?v=__VER__"></script>
