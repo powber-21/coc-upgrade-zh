@@ -158,7 +158,7 @@ function homeTech() {
 
 const VILLAGES = {
   home: {
-    zh: "家鄉", tag: "大本營、兵種、英雄與所有建築", art: ["home-barbarian-king", "home-town-hall", "home-archer"],
+    zh: "家鄉", tag: "大本營、兵種、英雄與所有建築",
     tabs: [
       ["heroes", "英雄", homeHeroes],
       ["tech", "科技", homeTech],
@@ -170,7 +170,7 @@ const VILLAGES = {
     ],
   },
   builder: {
-    zh: "夜世界", tag: "建築大師的兵種、英雄與建築", art: ["builder-battle-machine", "builder-builder-hall", "builder-night-witch"],
+    zh: "夜世界", tag: "建築大師的兵種、英雄與建築",
     tabs: [
       ["heroes", "英雄", () => [sec("英雄", G("builder/heroes"))]],
       ["tech", "科技", () => [sec("兵種", G("builder/troops"))]],
@@ -182,7 +182,7 @@ const VILLAGES = {
     ],
   },
   "clan-capital": {
-    zh: "部落都城", tag: "都城大廳、區域建築與兵種", art: ["clan-capital-super-giant", "clan-capital-capital-hall", "clan-capital-rocket-balloon"],
+    zh: "部落都城", tag: "都城大廳、區域建築與兵種",
     tabs: [
       ["tech", "科技", () => [sec("兵種", G("clan-capital/troops")), sec("法術", G("clan-capital/spells"))]],
       ["build", "建築", () => [
@@ -213,11 +213,11 @@ function crumbs(parts) {
 
 function landingView() {
   crumbs([]);
-  const art = ids => ids.map((id, i) => DATA.items[id] && DATA.items[id].img ? `<img src="${DATA.items[id].img}" alt="" class="${i === 1 ? "big" : ""}">` : "").join("");
+  const art = name => `<img src="${BASE}card-${name}.webp" alt="" width="600" height="300">`;
   const cards = Object.entries(VILLAGES).map(([v, c]) =>
-    `<a class="vcard v-${v}" href="${BASE}#${v}"><div class="vt"><h2>${c.zh}</h2><p>${c.tag}</p></div><div class="art">${art(c.art)}</div></a>`);
+    `<a class="vcard v-${v}" href="${BASE}#${v}"><div class="vt"><h2>${c.zh}</h2><p>${c.tag}</p></div><div class="art">${art(v)}</div></a>`);
   cards.push(`<a class="vcard v-hall" href="${BASE}#hall"><div class="vt"><h2>依大本營等級</h2><p>選等級，查每樣東西能升到幾級</p></div>
-    <div class="art">${art(["builder-builder-hall", "home-town-hall", "home-laboratory"])}</div></a>`);
+    <div class="art">${art("hall")}</div></a>`);
   return `<div class="intro"><h1>升級數據</h1><p>部落衝突所有建築、兵種、法術、英雄與裝備的升級費用、時間和屬性。右上角可以套用月卡折扣。</p></div>
     <div class="vcards">${cards.join("")}</div>`;
 }
