@@ -56,8 +56,8 @@ header .wrap { display: grid; gap: 8px; padding-block: 12px 10px; }
 .vcard .vt { padding: 18px 20px 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--vc) 8%, var(--surface)), var(--surface)); }
 .vcard h2 { margin: 0; font-size: 24px; font-weight: 700; }
 .vcard p { margin: 2px 0 0; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.vcard .art { display: flex; align-items: flex-end; justify-content: center; padding: 8px 4px 4px; background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--vc) 55%, var(--surface)), color-mix(in srgb, var(--vc) 18%, var(--surface))); }
-.vcard .art img { width: 100%; max-width: 360px; height: auto; display: block; }
+.vcard .art { background: color-mix(in srgb, var(--vc) 30%, var(--surface)); }
+.vcard .art img { width: 100%; height: auto; display: block; }
 .v-home { --vc: #4caf50; } .v-builder { --vc: #e0913a; } .v-clan-capital { --vc: #4a8fe0; } .v-hall { --vc: #a565d6; }
 .subtabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
 .subtabs a { padding: 10px 18px; font-weight: 700; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; text-decoration: none; margin-bottom: -1px; }

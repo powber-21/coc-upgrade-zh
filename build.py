@@ -12,7 +12,7 @@ import shutil
 import sys
 from html import escape as esc
 
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image
 
 from zh import ZH_NAMES
 
@@ -255,40 +255,12 @@ def _paste(canvas, rel, height, center_x, bottom_y):
     canvas.alpha_composite(im, (round(center_x - im.width / 2), bottom_y - im.height))
 
 
-# 首頁四張卡片的插圖：(圖片, 高度, 中心 x, 底部 y, 是否左右翻轉)，畫布 600x300，後面的先畫
-CARD_ART = {
-    "home": [("images/home/town-hall/normal/level-18.png", 250, 300, 285, False),
-             ("images/home/troops/archer/normal/level-13.png", 200, 120, 295, True),
-             ("images/home/troops/giant/normal/level-13.png", 195, 490, 295, True)],
-    "builder": [("images/builder/builder-hall/normal/level-10.png", 250, 300, 285, False),
-                ("images/builder/heroes/battle-machine/icon.png", 195, 115, 295, False),
-                ("images/builder/heroes/battle-copter/icon.png", 165, 490, 250, True)],
-    "clan-capital": [("images/clan-capital/halls/capital-hall/normal/level-10.png", 250, 300, 285, False),
-                     ("images/clan-capital/troops/rocket-balloon/normal/level-1.png", 170, 110, 270, False),
-                     ("images/clan-capital/troops/mega-sparky/icon.png", 175, 495, 295, True)],
-    "hall": [("images/home/army-buildings/laboratory/normal/level-16.png", 175, 470, 285, False),
-             ("images/builder/builder-hall/normal/level-10.png", 175, 130, 285, False),
-             ("images/home/town-hall/normal/level-18.png", 240, 300, 295, False)],
-}
-
-
 def make_card_art():
-    """把每張卡片的建築和角色合成一張去背插圖（card-<村莊>.webp），角色用全身圖，不會被切到。"""
-    for name, parts in CARD_ART.items():
-        canvas = Image.new("RGBA", (600, 300))
-        for rel, height, cx, bottom, flip in parts:
-            im = Image.open(os.path.join(SRC, rel)).convert("RGBA")
-            im = im.crop(im.getbbox())
-            if flip:
-                im = im.transpose(Image.FLIP_LEFT_RIGHT)
-            im = im.resize((round(im.width * height / im.height), height), Image.LANCZOS)
-            # 腳下的淡淡影子
-            shadow = Image.new("RGBA", canvas.size)
-            w = round(im.width * .7)
-            ImageDraw.Draw(shadow).ellipse((cx - w / 2, bottom - 12, cx + w / 2, bottom + 4), fill=(0, 0, 0, 60))
-            canvas.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(6)))
-            canvas.alpha_composite(im, (round(cx - im.width / 2), bottom - im.height))
-        canvas.save(os.path.join(OUT, f"card-{name}.webp"), quality=85)
+    """首頁四張卡片的插圖：art/ 裡的 AI 繪圖原檔，縮小轉成 card-<名稱>.webp。"""
+    for path in glob.glob(os.path.join(HERE, "art", "*.jpg")):
+        im = Image.open(path).convert("RGB")
+        im = im.resize((800, round(im.height * 800 / im.width)), Image.LANCZOS)
+        im.save(os.path.join(OUT, f"card-{os.path.splitext(os.path.basename(path))[0]}.webp"), quality=82)
 
 
 def make_share_images():

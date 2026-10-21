@@ -213,7 +213,7 @@ function crumbs(parts) {
 
 function landingView() {
   crumbs([]);
-  const art = name => `<img src="${BASE}card-${name}.webp" alt="" width="600" height="300">`;
+  const art = name => `<img src="${BASE}card-${name}.webp" alt="" width="800" height="396">`;
   const cards = Object.entries(VILLAGES).map(([v, c]) =>
     `<a class="vcard v-${v}" href="${BASE}#${v}"><div class="vt"><h2>${c.zh}</h2><p>${c.tag}</p></div><div class="art">${art(v)}</div></a>`);
   cards.push(`<a class="vcard v-hall" href="${BASE}#hall"><div class="vt"><h2>依大本營等級</h2><p>選等級，查每樣東西能升到幾級</p></div>
