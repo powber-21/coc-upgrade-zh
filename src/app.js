@@ -207,7 +207,7 @@ try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}"
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
 function crumbs(parts) {
-  $("#crumbs").innerHTML = [`<a href="${BASE}#top">升級數據</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
+  $("#crumbs").innerHTML = [`<a href="${BASE}./">升級數據</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
 
