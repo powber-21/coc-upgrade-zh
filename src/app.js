@@ -1,204 +1,8 @@
-<!doctype html>
-<html lang="zh-Hant">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>部落衝突升級數據｜COC 兵種、建築、英雄升級時間與費用</title>
-<meta name="description" content="部落衝突（Clash of Clans, COC）繁體中文升級數據：所有兵種、建築、法術、英雄、裝備與戰寵的升級時間、升級費用和屬性，可依大本營等級查詢上限，每天自動更新。">
-<link rel="canonical" href="__SITE__/">
-<meta property="og:type" content="website">
-<meta property="og:title" content="部落衝突升級數據｜COC 升級時間與費用">
-<meta property="og:description" content="建築、兵種、英雄、裝備的升級費用與時間，每天自動更新。">
-<meta property="og:url" content="__SITE__/">
-<meta property="og:image" content="__SITE__/og.png?v=2">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png?v=2">
-<link rel="icon" type="image/png" sizes="180x180" href="apple-touch-icon.png?v=2">
-<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="部落數據">
-<meta name="theme-color" content="#ffffff">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
-<style>
-/* 版面：頂部固定的搜尋列 + 分頁，下方是圖示格子；點進去是可橫向捲動的等級表 */
-:root {
-  --bg: #eceff3;
-  --surface: #ffffff;
-  --sunk: #f5f6f8;
-  --ink: #1b2130;
-  --muted: #5b6475;
-  --line: #d6dbe3;
-  --accent: #b77a00;
-  --accent-soft: #fbefd1;
-  --gold: #d9a400;
-  --elixir: #c03fd6;
-  --dark: #4a3557;
-  --ore: #3f8fd2;
-  --capital: #e07b1f;
-  --hi: #fff6dc;
-  --font-display: "Lilita One", "Noto Sans TC", system-ui, sans-serif;
-  --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #11141a; --surface: #1a1f28; --sunk: #151920; --ink: #e9ecf1; --muted: #99a2b2; --line: #2a313e;
-    --accent: #f2b630; --accent-soft: #3a2f14; --gold: #f2c230; --elixir: #e070f2; --dark: #b99ad0; --ore: #6fb4f0; --capital: #f39a4a; --hi: #2c2716;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #11141a; --surface: #1a1f28; --sunk: #151920; --ink: #e9ecf1; --muted: #99a2b2; --line: #2a313e;
-  --accent: #f2b630; --accent-soft: #3a2f14; --gold: #f2c230; --elixir: #e070f2; --dark: #b99ad0; --ore: #6fb4f0; --capital: #f39a4a; --hi: #2c2716;
-  color-scheme: dark;
-}
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body { margin: 0; }
-img { max-width: 100%; }
-[hidden] { display: none !important; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5; }
-body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
-button, input, select { font: inherit; color: inherit; }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-
-.wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-
-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
-header .wrap { display: grid; gap: 8px; padding-block: 12px 10px; }
-.brand { text-decoration: none; }
-.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 17px; font-weight: 700; color: var(--ink); min-height: 28px; }
-.crumbs a { color: var(--accent); text-decoration: none; padding-block: 4px; }
-.crumbs .sep { opacity: .5; }
-
-.intro h1 { margin: 0 0 6px; font-size: 28px; }
-.intro p { margin: 0; color: var(--muted); max-width: 65ch; }
-.vcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
-.vcard { display: grid; grid-template-rows: auto 1fr; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); background: var(--surface); color: var(--ink); text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
-.vcard:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .35); }
-.vcard .vt { padding: 18px 20px 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--vc) 8%, var(--surface)), var(--surface)); }
-.vcard h2 { margin: 0; font-size: 24px; font-weight: 700; }
-.vcard p { margin: 2px 0 0; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.vcard .art { min-height: 150px; display: flex; align-items: flex-end; justify-content: center; padding: 12px 8px 0; background: radial-gradient(120% 90% at 50% 100%, color-mix(in srgb, var(--vc) 55%, var(--surface)), color-mix(in srgb, var(--vc) 18%, var(--surface))); }
-.vcard .art img { width: 84px; height: 84px; object-fit: contain; margin: 0 -8px 10px; filter: drop-shadow(0 6px 6px rgba(0, 0, 0, .3)); }
-.vcard .art img.big { width: 124px; height: 124px; margin-bottom: 4px; position: relative; z-index: 1; }
-.v-home { --vc: #4caf50; } .v-builder { --vc: #e0913a; } .v-clan-capital { --vc: #4a8fe0; } .v-hall { --vc: #a565d6; }
-.subtabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; border-bottom: 1px solid var(--line); }
-.subtabs a { padding: 10px 18px; font-weight: 700; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; text-decoration: none; margin-bottom: -1px; }
-.subtabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); }
-.top { display: flex; align-items: center; gap: 12px; }
-.brand { font-family: var(--font-display); font-size: 22px; letter-spacing: .02em; color: var(--ink); white-space: nowrap; line-height: 1; }
-.brand b { color: var(--accent); font-weight: 400; }
-.search { flex: 1; min-width: 0; position: relative; }
-.search input { width: 100%; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--sunk); padding: 0 12px; font-size: 16px; }
-.pass { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
-.pass select { height: 34px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunk); padding: 0 6px; }
-nav.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
-nav.tabs button { border: 0; background: none; padding: 10px 14px; font-weight: 700; color: var(--muted); border-bottom: 3px solid transparent; white-space: nowrap; cursor: pointer; }
-nav.tabs button[aria-current="true"] { color: var(--ink); border-bottom-color: var(--accent); }
-
-main .wrap { padding-block: 16px 48px; display: grid; gap: 28px; }
-h2.group { margin: 0 0 12px; font-size: 19px; color: var(--ink); font-weight: 900; display: flex; align-items: center; gap: 8px; }
-h2.group span { font-size: 13px; font-weight: 700; color: var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 9px; line-height: 1.5; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-a.tile { display: grid; justify-items: center; align-content: start; gap: 6px; padding: 12px 6px 10px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); text-decoration: none; color: var(--ink); text-align: center; }
-a.tile:hover { border-color: var(--accent); }
-.tile img, .tile .noimg { width: 72px; height: 72px; object-fit: contain; }
-.noimg { display: grid; place-items: center; border-radius: 10px; background: var(--sunk); color: var(--muted); font-family: var(--font-display); font-size: 22px; }
-.tile .n { font-size: 14px; line-height: 1.25; }
-.tile .e { font-size: 11px; color: var(--muted); line-height: 1.2; }
-.tile .lv { font-family: var(--font-display); font-size: 15px; color: var(--accent); line-height: 1; }
-.tile.off { opacity: .45; }
-
-.hallpick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
-.hallpick .lbl { font-weight: 700; margin-right: 4px; }
-.chip { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; min-width: 38px; height: 34px; padding: 0 10px; cursor: pointer; font-family: var(--font-display); font-size: 16px; }
-.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface); }
-.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.seg button { border: 0; background: var(--surface); padding: 6px 12px; cursor: pointer; font-weight: 700; color: var(--muted); }
-.seg button[aria-pressed="true"] { background: var(--accent-soft); color: var(--ink); }
-.note { color: var(--muted); font-size: 13px; margin: 0; }
-
-.back { border: 0; background: none; color: var(--accent); font-weight: 700; padding: 0; cursor: pointer; justify-self: start; }
-.hero { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 16px; align-items: center; }
-.hero img, .hero .noimg { width: 96px; height: 96px; object-fit: contain; }
-.hero h1 { margin: 0; font-size: 26px; line-height: 1.2; text-wrap: balance; }
-.hero .en { color: var(--muted); font-size: 14px; }
-.hero .crumb { color: var(--muted); font-size: 12px; letter-spacing: .06em; }
-.desc { margin: 0; color: var(--muted); max-width: 65ch; }
-.links { display: flex; flex-wrap: wrap; gap: 8px; }
-.links a { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); text-decoration: none; font-weight: 700; font-size: 13px; }
-.links img { width: 26px; height: 26px; object-fit: contain; }
-
-dl.attrs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1px; margin: 0; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
-dl.attrs div { background: var(--surface); padding: 8px 12px; min-width: 0; }
-dl.attrs dt { font-size: 12px; color: var(--muted); }
-dl.attrs dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
-dl.attrs div.wide { grid-column: 1 / -1; }
-dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 400; }
-
-section.tbl h3 { margin: 0 0 4px; font-size: 17px; }
-section.tbl .sub { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
-.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); -webkit-overflow-scrolling: touch; }
-table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; font-size: 14px; min-width: 100%; }
-th, td { padding: 8px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
-thead th { position: sticky; top: 0; background: var(--sunk); font-size: 12px; font-weight: 700; color: var(--muted); text-align: right; vertical-align: bottom; white-space: normal; min-width: 64px; line-height: 1.3; }
-th:first-child, td:first-child { position: sticky; left: 0; text-align: center; background: var(--surface); z-index: 1; border-right: 1px solid var(--line); }
-thead th:first-child { background: var(--sunk); z-index: 2; }
-td:first-child { font-family: var(--font-display); font-size: 16px; color: var(--accent); white-space: nowrap; }
-tbody tr:last-child td { border-bottom: 0; }
-.ri { width: 20px; height: 20px; object-fit: contain; vertical-align: -5px; margin-left: 4px; }
-.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
-.legend .ri { margin: 0 4px 0 0; }
-.disc { color: var(--accent); }
-.empty { padding: 40px 0; text-align: center; color: var(--muted); }
-footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; }
-footer p { margin: 0; max-width: 80ch; }
-footer a { color: inherit; }
-@media (max-width: 520px) {
-  body { font-size: 16px; }
-  .brand { font-size: 19px; }
-  .crumbs { font-size: 17px; }
-  h2.group { font-size: 18px; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
-  .tile img, .tile .noimg { width: 64px; height: 64px; }
-  .tile .n { font-size: 14px; }
-  .tile .lv { font-size: 16px; }
-  table { font-size: 15px; }
-  thead th { font-size: 13px; }
-  dl.attrs dt { font-size: 13px; }
-  .note, .legend, .hero .en { font-size: 14px; }
-  footer { font-size: 13px; }
-  .pass .t { display: none; }
-  .hero { grid-template-columns: 72px minmax(0, 1fr); }
-  .hero img, .hero .noimg { width: 72px; height: 72px; }
-  .hero h1 { font-size: 22px; }
-}
-</style>
-</head>
-<body>
-
-<header>
-  <div class="wrap">
-    <div class="top">
-      <a class="brand" href="#top">部落<b>數據</b></a>
-      <div class="search"><input id="q" type="search" placeholder="搜尋：弓箭手、archer、加農砲…" autocomplete="off" aria-label="搜尋"></div>
-      <label class="pass"><span class="t">月卡</span>
-        <select id="pass" aria-label="月卡折扣">
-          <option value="0">無通行證</option><option value="10">-10%</option><option value="15">-15%</option><option value="20">-20%</option>
-        </select>
-      </label>
-    </div>
-    <nav class="crumbs" id="crumbs" aria-label="目前位置"></nav>
-  </div>
-</header>
-<main><div class="wrap" id="view"></div></main>
-
-<script>
-const DATA = /*__DATA__*/null;
+const DATA = window.DATA;
+// 根目錄的頁面 BASE 是空字串；項目頁在子資料夾裡，BASE 是 "../"
+const BASE = document.documentElement.dataset.base || "";
+const PAGE_ITEM = document.documentElement.dataset.item || "";
+const itemHref = id => `${BASE}${id}/`;
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
@@ -321,7 +125,7 @@ const img = (it, cls = "") => it.img ? `<img src="${it.img}" alt="" class="${cls
 const nameOf = it => it.zh || it.en;
 
 function tile(it, extra = "", dim = false) {
-  return `<a class="tile${dim ? " off" : ""}" href="#${it.id}" title="${esc(it.en)}">${img(it)}<div class="n">${esc(nameOf(it))}</div>${extra}</a>`;
+  return `<a class="tile${dim ? " off" : ""}" href="${itemHref(it.id)}" title="${esc(it.en)}">${img(it)}<div class="n">${esc(nameOf(it))}</div>${extra}</a>`;
 }
 
 const attrOf = (it, k) => (it.attrs.find(a => a[0] === k) || [])[1];
@@ -403,7 +207,7 @@ try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}"
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
 function crumbs(parts) {
-  $("#crumbs").innerHTML = [`<a href="#top">升級數據</a>`, ...parts.map(([t, href]) => href ? `<a href="#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
+  $("#crumbs").innerHTML = [`<a href="${BASE}#top">升級數據</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
 
@@ -411,8 +215,8 @@ function landingView() {
   crumbs([]);
   const art = ids => ids.map((id, i) => DATA.items[id] && DATA.items[id].img ? `<img src="${DATA.items[id].img}" alt="" class="${i === 1 ? "big" : ""}">` : "").join("");
   const cards = Object.entries(VILLAGES).map(([v, c]) =>
-    `<a class="vcard v-${v}" href="#${v}"><div class="vt"><h2>${c.zh}</h2><p>${c.tag}</p></div><div class="art">${art(c.art)}</div></a>`);
-  cards.push(`<a class="vcard v-hall" href="#hall"><div class="vt"><h2>依大本營等級</h2><p>選等級，查每樣東西能升到幾級</p></div>
+    `<a class="vcard v-${v}" href="${BASE}#${v}"><div class="vt"><h2>${c.zh}</h2><p>${c.tag}</p></div><div class="art">${art(c.art)}</div></a>`);
+  cards.push(`<a class="vcard v-hall" href="${BASE}#hall"><div class="vt"><h2>依大本營等級</h2><p>選等級，查每樣東西能升到幾級</p></div>
     <div class="art">${art(["builder-builder-hall", "home-town-hall", "home-laboratory"])}</div></a>`);
   return `<div class="intro"><h1>升級數據</h1><p>部落衝突所有建築、兵種、法術、英雄與裝備的升級費用、時間和屬性。右上角可以套用月卡折扣。</p></div>
     <div class="vcards">${cards.join("")}</div>`;
@@ -424,7 +228,7 @@ function villageView(v, tab) {
   state.sub[v] = cur[0]; save();
   crumbs([[cfg.zh]]);
   const sections = cur[2]().filter(s => s.items.length);
-  return `<nav class="subtabs" aria-label="${cfg.zh}分類">${cfg.tabs.map(([k, t]) => `<a href="#${v}.${k}" aria-current="${k === cur[0] ? "page" : "false"}">${t}</a>`).join("")}</nav>
+  return `<nav class="subtabs" aria-label="${cfg.zh}分類">${cfg.tabs.map(([k, t]) => `<a href="${BASE}#${v}.${k}" aria-current="${k === cur[0] ? "page" : "false"}">${t}</a>`).join("")}</nav>
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}<span>${s.items.length}</span></h2><div class="grid">${s.items.map(it => tile(it)).join("")}</div></section>`).join("")}`;
 }
 
@@ -475,11 +279,11 @@ function itemView(it) {
     <h3>${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>等級</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
     <tbody>${t.rows.map(r => `<tr><td>${r[0] ?? ""}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
-  return `${cfg ? `<a class="back" href="#${where.v}.${where.t}">‹ 返回${esc(cfg.zh)} · ${esc(tabName)}</a>` : ""}
+  return `${cfg ? `<a class="back" href="${BASE}#${where.v}.${where.t}">‹ 返回${esc(cfg.zh)} · ${esc(tabName)}</a>` : ""}
     <div class="hero">${img(it)}<div><div class="crumb">${esc(cfg ? cfg.zh : "")} · ${esc(where ? where.sec : "")}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div></div>
     ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
-    ${rel.length ? `<div class="links">${rel.map(r => `<a href="#${r.id}">${img(r)}${esc(nameOf(r))}</a>`).join("")}</div>` : ""}
+    ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))}</a>`).join("")}</div>` : ""}
     ${attrHtml}
     ${used.length ? `<div class="legend">${used.map(r => `<span>${resIcon(r)}${esc(value(r))}</span>`).join("")}${discount ? `<span class="disc">已套用月卡 -${discount}%</span>` : ""}</div>` : ""}
     ${tables}`;
@@ -501,7 +305,13 @@ function footer() {
 }
 
 function render() {
-  const h = decodeURIComponent(location.hash.slice(1));
+  let h = decodeURIComponent(location.hash.slice(1));
+  // 舊的 #home-archer 連結轉到新的項目頁；項目頁上的其他 # 連結回首頁處理
+  if (!PAGE_ITEM && DATA.items[h]) { location.replace(itemHref(h)); return; }
+  if (PAGE_ITEM) {
+    if (h && !DATA.items[h]) { location.replace(BASE + "#" + h); return; }
+    h = PAGE_ITEM;
+  }
   const q = $("#q").value;
   const v = $("#view");
   if (q.trim()) { v.innerHTML = searchView(q) + footer(); return; }
@@ -522,6 +332,3 @@ function render() {
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);
 render();
-</script>
-</body>
-</html>

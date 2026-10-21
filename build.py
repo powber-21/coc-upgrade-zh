@@ -1,13 +1,16 @@
-"""把 clash-of-clans-data 的 JSON 轉成 App 用的精簡資料，並嵌入 template.html 產生 index.html。
+"""把 clash-of-clans-data 的 JSON 轉成網站，輸出到 site/（src/ 裡是頁面外框、樣式與程式）。
 
 用法: python build.py <clash-of-clans-data 資料夾路徑>
 """
 import base64
 import glob
+import hashlib
 import io
 import json
 import os
+import shutil
 import sys
+from html import escape as esc
 
 from PIL import Image
 
@@ -16,6 +19,7 @@ from zh import ZH_NAMES
 SRC = sys.argv[1]
 SITE_URL = "https://powber-21.github.io/coc-upgrade-zh"
 HERE = os.path.dirname(os.path.abspath(__file__))
+OUT = os.path.join(HERE, "site")
 
 # (base, 資料夾, 中文分類名)，順序即顯示順序
 GROUPS = [
@@ -258,25 +262,26 @@ def make_share_images():
     _paste(og, "images/home/heroes/barbarian-king/icon.png", 440, 270, 660)
     _paste(og, "images/home/heroes/archer-queen/icon.png", 440, 930, 660)
     _paste(og, th, 520, 600, 610)
-    og.convert("RGB").save(os.path.join(HERE, "og.png"), optimize=True)
+    og.convert("RGB").save(os.path.join(OUT, "og.png"), optimize=True)
 
     icon = _gradient(180, 180, (255, 214, 102), (214, 140, 20)).convert("RGBA")
     _paste(icon, th, 150, 90, 168)
-    icon.convert("RGB").save(os.path.join(HERE, "apple-touch-icon.png"), optimize=True)
-    icon.resize((32, 32), Image.LANCZOS).convert("RGB").save(os.path.join(HERE, "favicon-32.png"), optimize=True)
+    icon.convert("RGB").save(os.path.join(OUT, "apple-touch-icon.png"), optimize=True)
+    icon.resize((32, 32), Image.LANCZOS).convert("RGB").save(os.path.join(OUT, "favicon-32.png"), optimize=True)
 
 
-def write_seo_files():
-    """產生給搜尋引擎的 robots.txt 與 sitemap.xml。"""
+def write_seo_files(ids):
+    """產生給搜尋引擎的 robots.txt 與 sitemap.xml（首頁加上每個項目頁）。"""
     import datetime
     today = datetime.date.today().isoformat()
-    open(os.path.join(HERE, "robots.txt"), "w", encoding="utf8").write(
+    open(os.path.join(OUT, "robots.txt"), "w", encoding="utf8").write(
         f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")
-    open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf8").write(
+    urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/{i}/" for i in ids]
+    open(os.path.join(OUT, "sitemap.xml"), "w", encoding="utf8").write(
         '<?xml version="1.0" encoding="UTF-8"?>\n'
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
-        f"  <url><loc>{SITE_URL}/</loc><lastmod>{today}</lastmod></url>\n"
-        "</urlset>\n")
+        + "".join(f"  <url><loc>{u}</loc><lastmod>{today}</lastmod></url>\n" for u in urls)
+        + "</urlset>\n")
 
 
 def main():
@@ -355,13 +360,60 @@ def main():
         it.pop("_levels", None)
 
     data = {"groups": groups, "items": items, "res": {k: thumb(v, 48) for k, v in RES_ICONS.items()}}
-    js = json.dumps(data, ensure_ascii=False, separators=(",", ":"))
-    tpl = open(os.path.join(HERE, "template.html"), encoding="utf8").read()
-    out = tpl.replace("/*__DATA__*/null", js).replace("__SITE__", SITE_URL)
+    write_site(data)
+
+
+def write_site(data):
+    """輸出整個網站到 site/：共用的 data.js / app.js / styles.css，首頁，以及每個項目一頁。"""
+    os.makedirs(OUT, exist_ok=True)
+    for name in os.listdir(OUT):
+        p = os.path.join(OUT, name)
+        shutil.rmtree(p) if os.path.isdir(p) else os.remove(p)
+    data_js = "window.DATA=" + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";"
+    app_js = open(os.path.join(HERE, "src/app.js"), encoding="utf8").read()
+    css = open(os.path.join(HERE, "src/styles.css"), encoding="utf8").read()
+    ver = hashlib.sha1((data_js + app_js + css).encode()).hexdigest()[:8]
+    for name, text in (("data.js", data_js), ("app.js", app_js), ("styles.css", css)):
+        open(os.path.join(OUT, name), "w", encoding="utf8").write(text)
+    shell = open(os.path.join(HERE, "src/shell.html"), encoding="utf8").read()
+    items, groups = data["items"], data["groups"]
+    group_zh = {g["key"]: g["zh"] for g in groups}
+    base_zh = {"home": "家鄉", "builder": "夜世界", "clan-capital": "部落都城", "clan": "部落"}
+
+    def page(path, base, item, title, desc, static):
+        html = shell
+        for k, v in (("__TITLE__", esc(title)), ("__DESC__", esc(desc)), ("__URL__", f"{SITE_URL}/{path}"),
+                     ("__BASE__", base), ("__ITEM__", item), ("__VER__", ver), ("__SITE__", SITE_URL),
+                     ("__STATIC__", static)):
+            html = html.replace(k, v)
+        os.makedirs(os.path.join(OUT, path), exist_ok=True)
+        open(os.path.join(OUT, path, "index.html"), "w", encoding="utf8").write(html)
+
+    # 首頁：靜態內容列出所有項目的連結，讓搜尋引擎找得到每一頁（瀏覽器載入後會被 app.js 取代）
+    lists = "".join(
+        f"<h2>{esc(base_zh.get(g['base'], ''))} · {esc(g['zh'])}</h2><ul>"
+        + "".join(f'<li><a href="{i}/">{esc(items[i]["zh"] or items[i]["en"])}</a></li>' for i in g["items"])
+        + "</ul>" for g in groups if g["items"])
+    page("", "", "", "部落衝突升級數據｜COC 兵種、建築、英雄升級時間與費用",
+         "部落衝突（Clash of Clans, COC）繁體中文升級數據：所有兵種、建築、法術、英雄、裝備與戰寵的升級時間、升級費用和屬性，可依大本營等級查詢上限，每天自動更新。",
+         "<h1>部落衝突升級數據</h1>" + lists)
+
+    for uid, it in items.items():
+        name = it["zh"] or it["en"]
+        en = f"（{it['en']}）" if it["zh"] else ""
+        kind = group_zh.get(it["group"], "")
+        rows = it["tables"][0]["rows"] if it["tables"] else []
+        summary = f"共 {len(rows)} 個等級" if rows else ""
+        title = f"{name}升級數據｜{it['en']}｜部落衝突 COC" if it["zh"] else f"{name} 升級數據｜部落衝突 COC"
+        desc = (f"部落衝突{base_zh.get(it['base'], '')}{kind}「{name}」{en}各等級的升級費用、升級時間、生命值與傷害"
+                f"{'，' + summary if summary else ''}。COC 繁體中文升級數據，每天自動更新。")
+        static = (f"<h1>{esc(name)}</h1><p>{esc(it['en'])}</p><p>{esc(desc)}</p>"
+                  + (f"<p>{esc(it['desc'])}</p>" if it.get("desc") else "") + '<p><a href="../">回到部落衝突升級數據首頁</a></p>')
+        page(f"{uid}/", "../", uid, title, desc, static)
+
     make_share_images()
-    write_seo_files()
-    open(os.path.join(HERE, "index.html"), "w", encoding="utf8").write(out)
-    print(f"items={len(items)} groups={len(groups)} size={len(out.encode()) / 1e6:.2f}MB")
+    write_seo_files(list(items))
+    print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 
 main()
