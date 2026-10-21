@@ -1,0 +1,78 @@
+# 每天檢查 clash-of-clans-data 有沒有更新；有的話重新產生網頁並發佈到 GitHub Pages
+name: 更新並發佈網頁
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 20 * * *" # 每天台灣時間 04:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      skip: ${{ steps.ver.outputs.skip }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 檢查資料有沒有更新
+        id: ver
+        run: |
+          NEW=$(git ls-remote https://github.com/chiefpansancolt/clash-of-clans-data.git HEAD | cut -f1)
+          OLD=$(cat data-version.txt 2>/dev/null || true)
+          echo "new=$NEW" >> "$GITHUB_OUTPUT"
+          if [ "$NEW" = "$OLD" ] && [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "資料沒有變動，略過"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.ver.outputs.skip != 'true'
+        with:
+          python-version: "3.12"
+
+      - name: 產生網頁
+        if: steps.ver.outputs.skip != 'true'
+        run: |
+          pip install pillow
+          git clone --depth 1 https://github.com/chiefpansancolt/clash-of-clans-data.git cocdata
+          python build.py cocdata
+          mkdir site
+          cp index.html og.png apple-touch-icon.png favicon-32.png site/
+
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.ver.outputs.skip != 'true'
+        with:
+          path: site
+
+      - name: 記錄資料版本
+        if: steps.ver.outputs.skip != 'true'
+        env:
+          NEW_SHA: ${{ steps.ver.outputs.new }}
+        run: |
+          echo "$NEW_SHA" > data-version.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data-version.txt
+          git diff --cached --quiet || (git commit -m "Update data to ${NEW_SHA:0:7}" && git push)
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
