@@ -272,8 +272,14 @@ def make_share_images():
 
 def write_seo_files(ids):
     """產生給搜尋引擎的 robots.txt 與 sitemap.xml（首頁加上每個項目頁）。"""
-    import datetime
-    today = datetime.date.today().isoformat()
+    import datetime, subprocess
+    # 用資料最後更新的日期，而不是每次產生網頁的日期，避免假裝每天都有新內容
+    try:
+        today = subprocess.run(["git", "-C", SRC, "log", "-1", "--format=%cs"],
+                               capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        today = ""
+    today = today or datetime.date.today().isoformat()
     open(os.path.join(OUT, "robots.txt"), "w", encoding="utf8").write(
         f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")
     urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/{i}/" for i in ids]
