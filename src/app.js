@@ -322,7 +322,7 @@ function searchView(q) {
 function faqView() {
   crumbs([["常見問題"]]);
   const qa = [
-    ["這個網站是做什麼的？", "查詢部落衝突（Clash of Clans）所有兵種、建築、法術、英雄、裝備與戰寵的升級費用、升級時間和屬性，全部是繁體中文。"],
+    ["這個網站是做什麼的？", "查詢部落衝突（Clash of Clans）所有兵種、建築、法術、英雄、裝備與戰寵的升級費用、升級時間和屬性。"],
     ["為什麼做這個網站？", "想查資料又不想每次都翻 wiki，所以自己做了一個。"],
     ["資料從哪裡來？準確嗎？", `數據來自開源專案 <a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>（MIT 授權，© 2026 Christopher Pezza）。本站只負責整理成中文和方便查詢，數字和原始資料一致。遊戲剛改版時，資料可能要過幾天才會更新。`],
     ["多久更新一次？", "每天自動檢查一次，資料來源一更新，本站隔天就會跟著更新。"],
