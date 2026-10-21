@@ -266,6 +266,19 @@ def make_share_images():
     icon.resize((32, 32), Image.LANCZOS).convert("RGB").save(os.path.join(HERE, "favicon-32.png"), optimize=True)
 
 
+def write_seo_files():
+    """產生給搜尋引擎的 robots.txt 與 sitemap.xml。"""
+    import datetime
+    today = datetime.date.today().isoformat()
+    open(os.path.join(HERE, "robots.txt"), "w", encoding="utf8").write(
+        f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")
+    open(os.path.join(HERE, "sitemap.xml"), "w", encoding="utf8").write(
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        f"  <url><loc>{SITE_URL}/</loc><lastmod>{today}</lastmod></url>\n"
+        "</urlset>\n")
+
+
 def main():
     items, groups, order = {}, [], {}
     for base, folder, zh in GROUPS:
@@ -346,6 +359,7 @@ def main():
     tpl = open(os.path.join(HERE, "template.html"), encoding="utf8").read()
     out = tpl.replace("/*__DATA__*/null", js).replace("__SITE__", SITE_URL)
     make_share_images()
+    write_seo_files()
     open(os.path.join(HERE, "index.html"), "w", encoding="utf8").write(out)
     print(f"items={len(items)} groups={len(groups)} size={len(out.encode()) / 1e6:.2f}MB")
 

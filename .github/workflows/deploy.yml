@@ -48,7 +48,7 @@ jobs:
           git clone --depth 1 https://github.com/chiefpansancolt/clash-of-clans-data.git cocdata
           python build.py cocdata
           mkdir site
-          cp index.html og.png apple-touch-icon.png favicon-32.png site/
+          cp index.html og.png apple-touch-icon.png favicon-32.png robots.txt sitemap.xml site/
 
       - uses: actions/upload-pages-artifact@v3
         if: steps.ver.outputs.skip != 'true'
