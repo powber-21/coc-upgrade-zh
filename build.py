@@ -286,16 +286,26 @@ def make_share_images():
     icon.resize((32, 32), Image.LANCZOS).convert("RGB").save(os.path.join(OUT, "favicon-32.png"), optimize=True)
 
 
+def data_date():
+    """資料最後更新的日期：資料來源 CHANGELOG 裡最新一版的發布日期（找不到就用最後一次提交的日期）。"""
+    import datetime, re, subprocess
+    try:
+        m = re.search(r"^## \[[^\]]+\] [-—] (\d{4}-\d{2}-\d{2})", open(os.path.join(SRC, "CHANGELOG.md"), encoding="utf8").read(), re.M)
+        if m:
+            return m.group(1)
+    except OSError:
+        pass
+    try:
+        return subprocess.run(["git", "-C", SRC, "log", "-1", "--format=%cs"],
+                              capture_output=True, text=True, check=True).stdout.strip()
+    except (OSError, subprocess.CalledProcessError):
+        return datetime.date.today().isoformat()
+
+
 def write_seo_files(ids):
     """產生給搜尋引擎的 robots.txt 與 sitemap.xml（首頁加上每個項目頁）。"""
-    import datetime, subprocess
     # 用資料最後更新的日期，而不是每次產生網頁的日期，避免假裝每天都有新內容
-    try:
-        today = subprocess.run(["git", "-C", SRC, "log", "-1", "--format=%cs"],
-                               capture_output=True, text=True, check=True).stdout.strip()
-    except (OSError, subprocess.CalledProcessError):
-        today = ""
-    today = today or datetime.date.today().isoformat()
+    today = data_date()
     open(os.path.join(OUT, "robots.txt"), "w", encoding="utf8").write(
         f"User-agent: *\nAllow: /\nSitemap: {SITE_URL}/sitemap.xml\n")
     urls = [f"{SITE_URL}/"] + [f"{SITE_URL}/{i}/" for i in ids]
@@ -381,7 +391,8 @@ def main():
     for it in items.values():
         it.pop("_levels", None)
 
-    data = {"groups": groups, "items": items, "res": {k: thumb(v, 48, inline=True) for k, v in RES_ICONS.items()}}
+    data = {"groups": groups, "items": items, "res": {k: thumb(v, 48, inline=True) for k, v in RES_ICONS.items()},
+            "updated": data_date()}
     write_site(data)
 
 

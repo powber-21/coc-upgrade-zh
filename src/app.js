@@ -338,7 +338,8 @@ function faqView() {
 }
 
 function footer() {
-  return `<footer><p>資料來源：<a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，© 2026 Christopher Pezza，依 MIT 授權使用（<a href="https://github.com/powber-21/coc-upgrade-zh/blob/main/THIRD_PARTY_LICENSES.md" target="_blank" rel="noopener">授權條文</a>）。中文名稱為對照翻譯，可能與遊戲內略有不同。</p>
+  return `<footer><p><b>資料最後更新：${esc(DATA.updated || "")}</b></p>
+    <p>資料來源：<a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，© 2026 Christopher Pezza，依 MIT 授權使用（<a href="https://github.com/powber-21/coc-upgrade-zh/blob/main/THIRD_PARTY_LICENSES.md" target="_blank" rel="noopener">授權條文</a>）。中文名稱為對照翻譯，可能與遊戲內略有不同。</p>
     <p><a href="${BASE}faq/">常見問題</a></p>
     <p>本網站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">www.supercell.com/fan-content-policy</a>.</p></footer>`;
 }
