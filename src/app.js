@@ -288,7 +288,7 @@ function itemView(it) {
   const panel = hm || used.length ? `<div class="panel">
     ${hm ? `<div class="row"><span class="lbl">我的${hallName}</span><div class="step">
       <button type="button" data-my="-1" data-b="${it.base}" data-n="${hm.length}" aria-label="${hallName}降一級"${my <= 1 ? " disabled" : ""}>−</button>
-      <span class="n">${my}</span>
+      <select class="n" data-myset data-b="${it.base}" aria-label="選擇${hallName}等級">${hm.map((_, i) => `<option value="${i + 1}"${i + 1 === my ? " selected" : ""}>${i + 1}</option>`).join("")}</select>
       <button type="button" data-my="1" data-b="${it.base}" data-n="${hm.length}" aria-label="${hallName}升一級"${my >= hm.length ? " disabled" : ""}>+</button></div></div>
       <div class="say">${hallName} <b>${my}</b> ${myMax ? `可升到 <b class="hl">Lv ${myMax}</b>，表中淡色的等級需要更高的${hallName}。` : "還不能使用。"}</div>` : ""}
     ${hm && used.length ? "<hr>" : ""}
@@ -378,6 +378,10 @@ $("#view").addEventListener("click", e => {
     const b = m.dataset.b, n = +m.dataset.n;
     state.my[b] = Math.max(1, Math.min(n, (state.my[b] || n) + +m.dataset.my)); save(); render();
   }
+});
+$("#view").addEventListener("change", e => {
+  const s = e.target.closest("[data-myset]");
+  if (s) { state.my[s.dataset.b] = +s.value; save(); render(); }
 });
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);

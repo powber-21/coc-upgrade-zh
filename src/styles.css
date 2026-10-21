@@ -45,6 +45,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
+/* 快速連點按鈕時，不要觸發手機「點兩下放大」 */
+a, button, select, label { touch-action: manipulation; }
 :focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 
 .wrap { max-width: 980px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
@@ -147,7 +149,7 @@ dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 500; font-size: 
 .step { display: flex; align-items: center; gap: 8px; }
 .step button { width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--pill); color: var(--ink); font-size: 22px; font-weight: 900; line-height: 1; box-shadow: 0 3px 0 var(--ledge); }
 .step button:disabled { opacity: .4; cursor: default; }
-.step .n { min-width: 40px; text-align: center; font-family: var(--font-display); font-size: 26px; line-height: 1; }
+.step .n { min-width: 64px; height: 44px; padding: 0 22px 0 10px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235a6472' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 8px center; color: var(--ink); font-family: var(--font-display); font-size: 24px; line-height: 1; text-align: center; text-align-last: center; -webkit-appearance: none; appearance: none; cursor: pointer; }
 
 section.tbl h3 { margin: 0 0 4px; font-size: 20px; font-weight: 900; }
 section.tbl .sub { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
