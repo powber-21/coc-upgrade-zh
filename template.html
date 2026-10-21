@@ -69,8 +69,8 @@ button, input, select { font: inherit; color: inherit; }
 header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
 header .wrap { display: grid; gap: 8px; padding-block: 12px 10px; }
 .brand { text-decoration: none; }
-.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); min-height: 20px; }
-.crumbs a { color: var(--accent); text-decoration: none; font-weight: 700; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 17px; font-weight: 700; color: var(--ink); min-height: 28px; }
+.crumbs a { color: var(--accent); text-decoration: none; padding-block: 4px; }
 .crumbs .sep { opacity: .5; }
 
 .intro h1 { margin: 0 0 6px; font-size: 28px; }
@@ -160,7 +160,7 @@ footer a { color: inherit; }
 @media (max-width: 520px) {
   body { font-size: 16px; }
   .brand { font-size: 19px; }
-  .crumbs { font-size: 14px; }
+  .crumbs { font-size: 17px; }
   h2.group { font-size: 18px; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); gap: 8px; }
   .tile img, .tile .noimg { width: 64px; height: 64px; }
