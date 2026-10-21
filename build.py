@@ -369,6 +369,57 @@ def main():
     write_site(data)
 
 
+PRERENDER_JS = """<script type="application/json" id="out"></script>
+<script>
+const out = {};
+if (BASE) for (const id in DATA.items) out[id] = { view: itemView(DATA.items[id]) + footer(), crumbs: $("#crumbs").innerHTML };
+else out[""] = { view: landingView() + footer(), crumbs: $("#crumbs").innerHTML };
+document.getElementById("out").textContent = JSON.stringify(out).replace(/</g, "\\\\u003c");
+</script>"""
+
+
+def find_browser():
+    for name in ("google-chrome", "chromium", "chromium-browser", "msedge"):
+        if shutil.which(name):
+            return shutil.which(name)
+    for p in (r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+              r"C:\Program Files\Google\Chrome\Application\chrome.exe"):
+        if os.path.exists(p):
+            return p
+    return None
+
+
+def prerender():
+    """用無頭瀏覽器執行 app.js，把首頁和每個項目頁畫好的畫面存下來，直接寫進網頁。
+    找不到瀏覽器時回傳 {}，網頁會改成顯示「載入中」再由瀏覽器畫出來。"""
+    import subprocess, tempfile
+    browser = find_browser()
+    if not browser:
+        if os.environ.get("CI"):
+            sys.exit("找不到 Chrome，無法預先產生網頁")
+        print("找不到瀏覽器，略過預先產生")
+        return {}
+    result = {}
+    with tempfile.TemporaryDirectory() as profile:
+        for path, base in (("_pre_root.html", ""), ("_pre/index.html", "../")):
+            full = os.path.join(OUT, path)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            open(full, "w", encoding="utf8").write(
+                f'<!doctype html><html data-base="{base}"><meta charset="utf-8"><body>'
+                '<input id="q"><select id="pass"></select><nav id="crumbs"></nav><div id="view"></div>'
+                f'<script src="{base}data.js"></script><script src="{base}app.js"></script>{PRERENDER_JS}</body></html>')
+            dom = subprocess.run(
+                [browser, "--headless=new", "--disable-gpu", "--no-sandbox", f"--user-data-dir={profile}",
+                 "--allow-file-access-from-files", "--virtual-time-budget=20000", "--dump-dom",
+                 "file:///" + os.path.abspath(full).replace(os.sep, "/")],
+                capture_output=True, timeout=300).stdout.decode("utf8")
+            start = dom.index('id="out">') + len('id="out">')
+            result.update(json.loads(dom[start:dom.index("</script>", start)]))
+        os.remove(os.path.join(OUT, "_pre_root.html"))
+        shutil.rmtree(os.path.join(OUT, "_pre"))
+    return result
+
+
 def write_site(data):
     """輸出整個網站到 site/：共用的 data.js / app.js / styles.css，首頁，以及每個項目一頁。"""
     os.makedirs(OUT, exist_ok=True)
@@ -386,11 +437,19 @@ def write_site(data):
     group_zh = {g["key"]: g["zh"] for g in groups}
     base_zh = {"home": "家鄉", "builder": "夜世界", "clan-capital": "部落都城", "clan": "部落"}
 
+    pre = prerender()
+    loading = '<div class="loading" role="status">載入中<i></i><i></i><i></i></div>'
+
     def page(path, base, item, title, desc, static):
+        # 有預先產生的畫面就直接放進去；沒有的話先顯示「載入中」，原本的文字清單藏起來給搜尋引擎看
+        p = pre.get(item)
+        view = p["view"] if p else loading
+        if static:
+            view += f'<div class="seo">{static}</div>'
         html = shell
         for k, v in (("__TITLE__", esc(title)), ("__DESC__", esc(desc)), ("__URL__", f"{SITE_URL}/{path}"),
                      ("__BASE__", base), ("__ITEM__", item), ("__VER__", ver), ("__SITE__", SITE_URL),
-                     ("__STATIC__", static)):
+                     ("__CRUMBS__", p["crumbs"] if p else ""), ("__STATIC__", view)):
             html = html.replace(k, v)
         os.makedirs(os.path.join(OUT, path), exist_ok=True)
         open(os.path.join(OUT, path, "index.html"), "w", encoding="utf8").write(html)
@@ -415,7 +474,7 @@ def write_site(data):
                 f"{'，' + summary if summary else ''}。COC 繁體中文升級數據，每天自動更新。")
         static = (f"<h1>{esc(name)}</h1><p>{esc(it['en'])}</p><p>{esc(desc)}</p>"
                   + (f"<p>{esc(it['desc'])}</p>" if it.get("desc") else "") + '<p><a href="../">回到部落衝突升級數據首頁</a></p>')
-        page(f"{uid}/", "../", uid, title, desc, static)
+        page(f"{uid}/", "../", uid, title, desc, "" if uid in pre else static)
 
     make_share_images()
     write_seo_files(list(items))
