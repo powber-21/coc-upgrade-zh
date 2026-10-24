@@ -161,7 +161,7 @@ try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}"
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
 function crumbs(parts) {
-  $("#crumbs").innerHTML = [`<a href="${BASE}./">升級數據</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
+  $("#crumbs").innerHTML = [`<a href="${BASE}./">數據首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
 
@@ -285,7 +285,7 @@ function searchView(q) {
 }
 
 function faqView() {
-  crumbs([["常見問題"]]);
+  $("#crumbs").innerHTML = "";  // 這頁不顯示路徑，改成右上角的連結亮起來
   const qa = [
     ["這個網站是做什麼的？", "查詢部落衝突（Clash of Clans）所有兵種、建築、法術、英雄、裝備與戰寵的升級費用、升級時間和屬性。"],
     ["為什麼做這個網站？", "想查資料又不想每次都翻 wiki，所以自己做了一個。"],
@@ -329,7 +329,7 @@ function logLines(ch) {
 }
 const fmtDay = d => { const [y, m, dd] = d.split("-"); return `${y} 年 ${+m} 月 ${+dd} 日`; };
 function updatesView() {
-  crumbs([["版本更新"]]);
+  $("#crumbs").innerHTML = "";  // 這頁不顯示路徑，改成右上角的連結亮起來
   const log = DATA.log || [];
   return `<div class="intro"><h1>版本更新</h1><p>資料來源每次更新時，自動比對出新增的項目和改變的數值。數值依照目前的中文名稱顯示。</p></div>
     <div class="log">${log.map(day => {
@@ -407,5 +407,7 @@ $("#view").addEventListener("change", e => {
 });
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);
+// 版本更新、常見問題頁：右上角對應的連結亮起來，讓使用者知道自己在哪一頁
+document.querySelectorAll(".toplinks a").forEach(a => { if (PAGE_ITEM && a.getAttribute("href").endsWith(PAGE_ITEM + "/")) a.setAttribute("aria-current", "page"); });
 if (logRecent() && $("#loglink")) $("#loglink").insertAdjacentHTML("afterbegin", `<i class="dot" title="最近有資料更新"></i>`);
 render();

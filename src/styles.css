@@ -66,9 +66,11 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 .search input::placeholder { color: #6b7480; }
 .navrow { display: flex; align-items: flex-start; gap: 12px; }
 .navrow .crumbs { flex: 1; min-width: 0; }
-.toplinks { display: flex; gap: 14px; flex-shrink: 0; font-size: 14px; font-weight: 700; min-height: 26px; align-items: center; }
-.toplinks a { display: inline-flex; align-items: center; gap: 5px; color: #c9d2de; text-decoration: none; padding-block: 2px; }
+.toplinks { display: flex; gap: 6px; margin-left: auto; flex-shrink: 0; font-size: 14px; font-weight: 700; min-height: 26px; align-items: center; }
+.toplinks a { display: inline-flex; align-items: center; gap: 5px; color: #c9d2de; text-decoration: none; padding: 2px 8px; border-radius: 8px; position: relative; }
 .toplinks a:hover { color: #fff; }
+.toplinks a[aria-current="page"] { color: #fff; background: rgba(255, 255, 255, .12); }
+.toplinks a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
 .toplinks .dot { width: 8px; height: 8px; border-radius: 50%; background: #e5484d; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 700; color: #fff; min-height: 26px; }
 .crumbs a { color: var(--gold); text-decoration: none; padding-block: 2px; }
