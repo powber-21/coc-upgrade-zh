@@ -94,7 +94,7 @@ function homeTech() {
   return [
     sec("聖水兵", t.filter(x => !dark(x, "troopType"))),
     sec("闇黑兵", t.filter(x => dark(x, "troopType"))),
-    sec("超級兵", G("home/super-troops")),
+    sec("超級部隊", G("home/super-troops")),
     sec("法術", s.filter(x => !dark(x, "spellType"))),
     sec("闇黑法術", s.filter(x => dark(x, "spellType"))),
     sec("攻城機器", G("home/siege-machines")),
@@ -104,11 +104,11 @@ function homeTech() {
 
 const VILLAGES = {
   home: {
-    zh: "家鄉", tag: "大本營、兵種、英雄與所有建築",
+    zh: "家鄉村莊", tag: "大本營、兵種、英雄與所有建築",
     tabs: [
       ["heroes", "英雄", homeHeroes],
       ["tech", "科技", homeTech],
-      ["th", "大本", () => [sec("大本營", G("home/town-hall")), sec("工藝防禦", G("home/crafted-defenses")), sec("守衛", G("home/guardians"))]],
+      ["th", "大本", () => [sec("大本營", G("home/town-hall")), sec("精工防禦", G("home/crafted-defenses")), sec("守衛", G("home/guardians"))]],
       ["build", "建築", () => [
         sec("防禦建築", [...G("home/walls"), ...G("home/defenses")]), sec("陷阱", G("home/traps")),
         sec("資源建築", G("home/resource-buildings")), sec("軍隊建築", G("home/army-buildings")), sec("其他建築", G("home/other")),
@@ -116,7 +116,7 @@ const VILLAGES = {
     ],
   },
   builder: {
-    zh: "夜世界", tag: "建築大師的兵種、英雄與建築",
+    zh: "建築大師基地", tag: "建築大師的兵種、英雄與建築",
     tabs: [
       ["heroes", "英雄", () => [sec("英雄", G("builder/heroes"))]],
       ["tech", "科技", () => [sec("兵種", G("builder/troops"))]],
@@ -128,7 +128,7 @@ const VILLAGES = {
     ],
   },
   "clan-capital": {
-    zh: "部落首都", tag: "首都大本營、區域建築與兵種",
+    zh: "部落首都", tag: "首都大本營、衛城建築與兵種",
     tabs: [
       ["tech", "科技", () => [sec("兵種", G("clan-capital/troops")), sec("法術", G("clan-capital/spells"))]],
       ["build", "建築", () => [
@@ -196,7 +196,7 @@ function hallView() {
   const sections = VILLAGES[base].tabs.flatMap(([, , fn]) => fn())
     .map(s => sec(s.title, s.items.filter(it => it.hallMax && it.id !== hallId))).filter(s => s.items.length);
   return `<div class="seg" role="group" aria-label="村莊">
-      <button data-hb="home" aria-pressed="${base === "home"}">家鄉</button><button data-hb="builder" aria-pressed="${base === "builder"}">夜世界</button></div>
+      <button data-hb="home" aria-pressed="${base === "home"}">家鄉村莊</button><button data-hb="builder" aria-pressed="${base === "builder"}">建築大師基地</button></div>
     <div class="hallpick"><span class="lbl">${hallName}</span>${Array.from({ length: max }, (_, i) => `<button class="chip" data-h="${i + 1}" aria-pressed="${i + 1 === h}">${i + 1}</button>`).join("")}</div>
     <p class="note">每個項目在${hallName} ${h} 級時能升到的最高等級，以及可擁有數量（×）。灰色代表此等級尚未解鎖。</p>
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {

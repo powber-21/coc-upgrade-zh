@@ -27,13 +27,13 @@ ZH_NAMES = ZH["names"]
 GROUPS = [
     ("home", "town-hall", "大本營"),
     ("home", "defenses", "防禦建築"),
-    ("home", "crafted-defenses", "工藝防禦"),
+    ("home", "crafted-defenses", "精工防禦"),
     ("home", "traps", "陷阱"),
     ("home", "walls", "城牆"),
     ("home", "resource-buildings", "資源建築"),
     ("home", "army-buildings", "軍隊建築"),
     ("home", "troops", "兵種"),
-    ("home", "super-troops", "超級兵種"),
+    ("home", "super-troops", "超級部隊"),
     ("home", "spells", "法術"),
     ("home", "siege-machines", "攻城機器"),
     ("home", "heroes", "英雄"),
@@ -152,7 +152,7 @@ def table(levels, title=None):
             if path not in cols:
                 cols.append(path)
         lvl = lv.get("level")
-        rows.append((f"超充 {lvl}" if lv.get("supercharge") else lvl, row))
+        rows.append((f"蓄能 {lvl}" if lv.get("supercharge") else lvl, row))
     cols = [c for c in cols if any(r.get(c) not in (None, "") for _, r in rows)]
     return {"title": title, "cols": cols, "rows": [[lvl] + [r.get(c) for c in cols] for lvl, r in rows]}
 
@@ -346,7 +346,7 @@ def make_card_art():
 def make_share_images():
     """產生 LINE / 社群分享縮圖 (og.png) 與手機主畫面圖示 (apple-touch-icon.png)。"""
     th = "images/home/town-hall/normal/level-18.png"
-    # 分享縮圖用首頁「家鄉」卡片的插圖，縮到 630 高、左右置中裁成 1200 寬
+    # 分享縮圖用首頁「家鄉村莊」卡片的插圖，縮到 630 高、左右置中裁成 1200 寬
     og = Image.open(os.path.join(HERE, "art", "home.jpg")).convert("RGB")
     og = og.resize((round(og.width * 630 / og.height), 630), Image.LANCZOS)
     x = (og.width - 1200) // 2
@@ -540,7 +540,7 @@ def write_site(data):
     shell = open(os.path.join(HERE, "src/shell.html"), encoding="utf8").read()
     items, groups = data["items"], data["groups"]
     group_zh = {g["key"]: g["zh"] for g in groups}
-    base_zh = {"home": "家鄉", "builder": "夜世界", "clan-capital": "部落首都", "clan": "部落"}
+    base_zh = {"home": "家鄉村莊", "builder": "建築大師基地", "clan-capital": "部落首都", "clan": "部落"}
 
     pre = prerender()
     loading = '<div class="loading" role="status">載入中<i></i><i></i><i></i></div>'
