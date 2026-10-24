@@ -45,7 +45,8 @@ jobs:
         if: steps.ver.outputs.skip != 'true'
         run: |
           pip install pillow
-          git clone --depth 1 https://github.com/chiefpansancolt/clash-of-clans-data.git cocdata
+          # 下載完整歷史，build.py 才能比對每次更新改了什麼（更新紀錄頁）
+          git clone https://github.com/chiefpansancolt/clash-of-clans-data.git cocdata
           python build.py cocdata
 
       - uses: actions/upload-pages-artifact@v3

@@ -201,11 +201,12 @@ def attrs(d):
 
 
 IMAGES = {}  # 縮圖檔名 -> 內容，write_site 時寫到 site/img/
+NO_THUMB = []  # 比對舊版資料時不需要圖片，放進任何東西就略過縮圖
 
 
 def thumb(rel, size=88, inline=False):
     """縮小成 webp。項目圖存成獨立檔案（img/<內容雜湊>.webp，看到才下載）；inline=True 時直接內嵌（資源小圖示）。"""
-    if not rel:
+    if not rel or NO_THUMB:
         return None
     p = os.path.join(SRC, rel)
     if not os.path.exists(p):
@@ -328,6 +329,106 @@ def make_item(d, base, gkey, uid):
     if av:
         item["count"] = av
     return item
+
+
+# 版本更新從這天開始；更早是資料來源剛建立時的整理，不算遊戲更新
+LOG_SINCE = "2026-09-01"
+
+
+def git_src(*args):
+    import subprocess
+    return subprocess.run(["git", "-C", SRC, *args], capture_output=True, encoding="utf8", check=True).stdout
+
+
+def items_at(rev, path):
+    """某個版本的一個資料檔，轉成網站項目（兵種檔會多帶出它的超級部隊）。"""
+    import subprocess
+    try:
+        d = json.loads(git_src("show", f"{rev}:{path}"))
+    except (subprocess.CalledProcessError, ValueError):
+        return {}
+    if not isinstance(d, dict) or not d.get("id") or not (d.get("levels") or d.get("modules")):
+        return {}
+    base = path.split("/")[1]
+    out = {f"{base}-{d['id']}": make_item(d, base, "", "")}
+    if d.get("superTroop"):
+        out["home-" + d["superTroop"]["id"]] = make_item(dict(d["superTroop"], base="home"), "home", "", "")
+    return out
+
+
+def diff_item(old, new):
+    """比對同一個項目的新舊版本，列出新增的等級和改變的數值。"""
+    same = lambda a, b: (a in (None, "")) and (b in (None, "")) or a == b
+    ch = []
+    key = lambda t: t.get("en") or t.get("title") or ""
+    olds = {key(t): t for t in old["tables"]}
+    # 整個新增的召喚單位只寫「新增」，不再逐項列出它的屬性
+    fresh = tuple(camel(t["en"]) + "." for t in new["tables"] if t.get("en") and key(t) not in olds)
+    oa = {k: v for k, v in old["attrs"]}
+    for k, v in new["attrs"]:
+        if not same(oa.get(k), v) and not (k not in oa and fresh and k.startswith(fresh)):
+            ch.append({"k": k, "o": oa.get(k), "n": v})
+    for i, t in enumerate(new["tables"]):
+        tbl = t.get("title") if i else None
+        ot = olds.get(key(t))
+        if not ot:
+            ch.append({"tbl": tbl or "", "add": 1})
+            continue
+        orows = {json.dumps(r[0]): dict(zip(ot["cols"], r[1:])) for r in ot["rows"]}
+        added = []
+        for r in t["rows"]:
+            o = orows.get(json.dumps(r[0]))
+            if o is None:
+                added.append(r[0])
+                continue
+            for c, v in zip(t["cols"], r[1:]):
+                if not same(o.get(c), v):
+                    ch.append({"tbl": tbl, "lv": r[0], "k": c, "o": o.get(c), "n": v})
+        if added:
+            ch.append({"tbl": tbl, "lvAdd": added})
+    return ch
+
+
+def changelog(ids):
+    """用資料來源的 Git 歷史，比對每一天的更新新增了哪些項目、改了哪些數值。
+    ids 是網站現有項目的順序；找不到歷史（例如只下載最新版）時回傳空清單。"""
+    import subprocess
+    try:
+        commits = git_src("log", "--first-parent", f"--since={LOG_SINCE}", "--format=%H %cs", "--", "data").split()
+    except (OSError, subprocess.CalledProcessError):
+        return []
+    days = {}
+    for sha, day in zip(commits[::2], commits[1::2]):
+        days.setdefault(day, []).append(sha)  # 新的在前
+    order = {i: n for n, i in enumerate(ids)}
+    log = []
+    NO_THUMB.append(1)
+    try:
+        for day, shas in days.items():
+            old_rev, new_rev = shas[-1] + "^", shas[0]
+            try:
+                files = git_src("diff", "--no-renames", "--name-only", old_rev, new_rev, "--", "data").split()
+            except subprocess.CalledProcessError:
+                break  # 再往前的歷史沒有下載
+            entries = {}
+            for f in files:
+                if not f.endswith(".json"):
+                    continue
+                old, new = items_at(old_rev, f), items_at(new_rev, f)
+                for uid, it in new.items():
+                    if uid not in order:
+                        continue
+                    if uid not in old:
+                        entries[uid] = {"id": uid, "new": 1}
+                    else:
+                        ch = diff_item(old[uid], it)
+                        if ch:
+                            entries[uid] = {"id": uid, "ch": ch}
+            if entries:
+                log.append({"date": day, "items": sorted(entries.values(), key=lambda e: order[e["id"]])})
+    finally:
+        NO_THUMB.clear()
+    return log
 
 
 def _gradient(w, h, top, bottom):
@@ -483,7 +584,8 @@ def main():
         it.pop("_levels", None)
 
     data = {"groups": groups, "items": items, "res": {k: thumb(v, 48, inline=True) for k, v in RES_ICONS.items()},
-            "updated": data_date(), "zh": {k: ZH[k] for k in ("labels", "modes", "values")}}
+            "updated": data_date(), "log": changelog([i for g in groups for i in g["items"]]),
+            "zh": {k: ZH[k] for k in ("labels", "modes", "values")}}
     write_site(data)
 
 
@@ -493,6 +595,7 @@ const out = {};
 if (BASE) {
   for (const id in DATA.items) out[id] = { view: itemView(DATA.items[id]) + footer(), crumbs: $("#crumbs").innerHTML };
   out.faq = { view: faqView() + footer(), crumbs: $("#crumbs").innerHTML };
+  out.updates = { view: updatesView() + footer(), crumbs: $("#crumbs").innerHTML };
 }
 else out[""] = { view: landingView() + footer(), crumbs: $("#crumbs").innerHTML };
 document.getElementById("out").textContent = JSON.stringify(out).replace(/</g, "\\\\u003c");
@@ -603,9 +706,12 @@ def write_site(data):
     page("faq/", "../", "faq", "常見問題｜部落衝突數據",
          "部落衝突數據網站的常見問題：資料來源、更新頻率、中文名稱、怎麼加入手機主畫面。", "")
 
+    page("updates/", "../", "updates", "版本更新｜部落衝突數據",
+         "部落衝突（COC）版本更新：每次更新新增的兵種、建築、裝備，以及調整過的升級費用、時間和數值。", "")
+
     make_share_images()
     make_card_art()
-    write_seo_files(list(items) + ["faq"])
+    write_seo_files(list(items) + ["faq", "updates"])
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 

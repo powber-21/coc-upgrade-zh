@@ -302,10 +302,57 @@ function faqView() {
     <div class="faq">${qa.map(([q, a]) => `<section><h2>${q}</h2><p>${a}</p></section>`).join("")}</div>`;
 }
 
+// 版本更新：build.py 比對資料來源每次更新，列出新增的項目和改變的數值
+const lvName = l => l && typeof l === "object" ? `超級蓄能 ${l.sc}` : `${l} 級`;
+function logVal(v) {
+  if (v === null || v === undefined || v === "") return "無";
+  if (Array.isArray(v)) return v.map(x => x && x.u ? `${x.zh || x.u} ×${x.n}` : value(x)).join("、");
+  if (typeof v === "object" && "t" in v) return fmtT(v.t);
+  if (typeof v === "object" && "c" in v) return fmtN(v.c) + resIcon(v.r);
+  return esc(fmtN(value(v)));
+}
+function logLines(ch) {
+  const lines = [], by = new Map();
+  for (const c of ch) {
+    const pre = c.tbl ? esc(c.tbl) + " · " : "";
+    if (c.add) lines.push(`新增「${esc(c.tbl)}」`);
+    else if (c.lvAdd) lines.push(`${c.tbl ? esc(c.tbl) + "：" : ""}新增 ${c.lvAdd.map(lvName).join("、")}`);
+    else if (!("lv" in c)) lines.push(`${pre}${esc(label(c.k))}：${logVal(c.o)} → ${logVal(c.n)}`);
+    else {
+      // 同一個欄位改了好幾級，合成一行
+      const k = (c.tbl || "") + "|" + c.k;
+      if (!by.has(k)) { by.set(k, { pre, k: c.k, v: [] }); lines.push(by.get(k)); }
+      by.get(k).v.push(`${lvName(c.lv)}：${logVal(c.o)} → ${logVal(c.n)}`);
+    }
+  }
+  return lines.map(l => typeof l === "string" ? l : `${l.pre}${esc(label(l.k))}${l.v.map(x => `<span class="lvl">${x}</span>`).join("")}`);
+}
+const fmtDay = d => { const [y, m, dd] = d.split("-"); return `${y} 年 ${+m} 月 ${+dd} 日`; };
+function updatesView() {
+  crumbs([["版本更新"]]);
+  const log = DATA.log || [];
+  return `<div class="intro"><h1>版本更新</h1><p>資料來源每次更新時，自動比對出新增的項目和改變的數值。數值依照目前的中文名稱顯示。</p></div>
+    <div class="log">${log.map(day => {
+      const add = day.items.filter(e => e.new).map(e => DATA.items[e.id]);
+      const chg = day.items.filter(e => e.ch);
+      // 日期預設收起來，點日期才展開；展開後每個項目直接列出改了什麼
+      return `<details class="day"><summary><h2>${fmtDay(day.date)}</h2><span>${day.items.length} 個項目</span></summary>
+        ${add.length ? `<h3>新增項目</h3><div class="links">${add.map(it => `<a href="${itemHref(it.id)}">${img(it)}${esc(nameOf(it))} ›</a>`).join("")}</div>` : ""}
+        ${chg.length ? `<h3>數值調整</h3>${chg.map(e => {
+          const it = DATA.items[e.id];
+          return `<div class="item"><a class="name" href="${itemHref(it.id)}">${img(it)}<b>${esc(nameOf(it))}</b> ›</a>
+            <ul>${logLines(e.ch).map(l => `<li>${l}</li>`).join("")}</ul></div>`;
+        }).join("")}` : ""}
+        <button type="button" class="fold" data-fold>▴ 收合 ${fmtDay(day.date)}</button></details>`;
+    }).join("") || `<p class="note">目前還沒有版本更新紀錄。</p>`}</div>`;
+}
+// 最近一次資料更新在 3 天內，「版本更新」連結旁顯示紅點
+const logRecent = () => DATA.log && DATA.log.length && Date.now() - new Date(DATA.log[0].date + "T00:00:00+08:00") < 3 * 86400e3;
+
 function footer() {
   return `<footer><p><b>資料最後更新：${esc(DATA.updated || "")}</b></p>
     <p>資料來源：<a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，© 2026 Christopher Pezza，依 MIT 授權使用（<a href="https://github.com/powber-21/coc-upgrade-zh/blob/main/THIRD_PARTY_LICENSES.md" target="_blank" rel="noopener">授權條文</a>）。中文名稱為對照翻譯，可能與遊戲內略有不同。</p>
-    <p><a href="${BASE}faq/">常見問題</a></p>
+    <p><a href="${BASE}updates/">版本更新</a>　<a href="${BASE}faq/">常見問題</a></p>
     <p>本網站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">www.supercell.com/fan-content-policy</a>.</p></footer>`;
 }
 
@@ -321,6 +368,7 @@ function render() {
   const v = $("#view");
   if (q.trim()) { v.innerHTML = searchView(q) + footer(); return; }
   if (PAGE_ITEM === "faq") { v.innerHTML = faqView() + footer(); return; }
+  if (PAGE_ITEM === "updates") { v.innerHTML = updatesView() + footer(); return; }
   const it = DATA.items[h];
   const [village, tab] = h.split(".");
   if (it) {
@@ -345,10 +393,19 @@ $("#view").addEventListener("click", e => {
     state.my[b] = Math.max(1, Math.min(n, (state.my[b] || n) + +m.dataset.my)); save(); render();
   }
 });
+// 版本更新頁：滑到一天的最下面，按按鈕收起來並回到那個日期
+$("#view").addEventListener("click", e => {
+  const b = e.target.closest("[data-fold]");
+  if (!b) return;
+  const day = b.closest("details");
+  day.open = false;
+  if (day.getBoundingClientRect().top < 0) day.scrollIntoView({ block: "start" });
+});
 $("#view").addEventListener("change", e => {
   const s = e.target.closest("[data-myset]");
   if (s) { state.my[s.dataset.b] = +s.value; save(); render(); }
 });
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);
+if (logRecent() && $("#loglink")) $("#loglink").insertAdjacentHTML("afterbegin", `<i class="dot" title="最近有資料更新"></i>`);
 render();
