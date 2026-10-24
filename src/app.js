@@ -244,7 +244,7 @@ function itemView(it) {
     ${hm && used.length ? "<hr>" : ""}
     ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
   const tables = it.tables.map(t => `<section class="tbl">
-    <h3>${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
+    <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
     <tbody>${t.rows.map(r => `<tr${!t.extra && typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${typeof r[0] === "number" ? `<span class="lvb">${r[0]}</span>` : esc(r[0] ?? "")}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>

@@ -270,7 +270,11 @@ def sub_tables(d):
         levels = [{**{k: v for k, v in lv.items() if k != "abilityLevel"}, "level": lv.get("level", lv.get("abilityLevel"))}
                   for lv in u["levels"]]
         name = u.get("name")
-        add(table(levels, title or (zh_name(name) if name else None)), en=name)
+        t = table(levels, title or (zh_name(name) if name else None))
+        img = thumb(pick_image(u))  # 召喚單位、武器有自己的圖示，放在表格標題旁
+        if img:
+            t["img"] = img
+        add(t, en=name)
 
     for k, v in d.items():
         if k in ("superTroop", "levels", "modules"):
