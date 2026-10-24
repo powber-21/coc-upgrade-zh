@@ -410,10 +410,20 @@ $("#q").addEventListener("input", render);
 // 版本更新、常見問題頁：右上角對應的連結亮起來，讓使用者知道自己在哪一頁
 document.querySelectorAll(".toplinks a").forEach(a => { if (PAGE_ITEM && a.getAttribute("href").endsWith(PAGE_ITEM + "/")) a.setAttribute("aria-current", "page"); });
 // 看過版本更新頁就記下最新的日期，紅點不再出現，直到下一次資料更新
-let logSeen = "";
-try {
-  if (PAGE_ITEM === "updates" && DATA.log && DATA.log.length) localStorage.setItem("coc-log-seen", DATA.log[0].date);
-  logSeen = localStorage.getItem("coc-log-seen") || "";
-} catch (e) {}
-if (logRecent() && logSeen !== DATA.log[0].date && $("#loglink")) $("#loglink").insertAdjacentHTML("afterbegin", `<i class="dot" title="最近有資料更新"></i>`);
+function logDot() {
+  const link = $("#loglink");
+  if (!link || !DATA.log || !DATA.log.length) return;
+  let seen = "";
+  try {
+    if (PAGE_ITEM === "updates") localStorage.setItem("coc-log-seen", DATA.log[0].date);
+    seen = localStorage.getItem("coc-log-seen") || "";
+  } catch (e) {}
+  const dot = $(".dot", link), show = logRecent() && seen !== DATA.log[0].date;
+  if (show && !dot) link.insertAdjacentHTML("afterbegin", `<i class="dot" title="最近有資料更新"></i>`);
+  if (!show && dot) dot.remove();
+}
+logDot();
+// 用返回鍵回到之前的頁面時，瀏覽器會直接顯示舊畫面，要再檢查一次
+window.addEventListener("pageshow", logDot);
+window.addEventListener("storage", logDot);
 render();
