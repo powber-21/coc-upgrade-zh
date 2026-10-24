@@ -53,11 +53,14 @@ const LABELS = {
   armorHitpoints: "護甲生命值", damageVsResources: "對資源傷害", heroLevelCaps: "英雄等級上限", maxEquipmentLevel: "裝備等級上限",
   common: "普通", epic: "史詩", shinyOre: "閃亮礦石", glowyOre: "發光礦石", starryOre: "星光礦石", ability: "技能", weapon: "武器", name: "名稱",
   targets: "目標", gearUp: "齒輪強化", cost: "費用", time: "時間", requiresLevel: "需等級", timeGainedMinutes: "獲得時間(分)", boostDurationMinutes: "加速時間(分)",
+  ruinKnight: "廢墟騎士", ruinKnightLevel: "廢墟騎士等級", maximumRuinKnightsSummoned: "被召喚單位總數",
+  redeploySpeedIncrease: "重新部署速度提升", portalTileRadius: "傳送半徑(格)", healingOnRedeploy: "重新部署時治療",
+  hasteOnRedeploy: "重新部署時加速效果", recallCapacity: "可召回的部隊空間",
 };
 const MODES = { normal: "一般", multiTarget: "多目標", singleTarget: "單目標", ground: "對地", air: "對空", burst: "連發", sniper: "狙擊",
   gearUp: "齒輪強化", geared: "齒輪強化", gearedUpBurst: "齒輪強化連發", gearedUpFastAttack: "齒輪強化快攻", longRange: "遠程", fastAttack: "快速攻擊",
   stage1: "第一階段", stage2: "第二階段", stage3: "第三階段", rage: "狂暴", poison: "毒藥", invisibility: "隱形", earthquake: "地震",
-  airAndGround: "對空與對地", builder: "建築工人", active: "啟動", depleted: "耗盡" };
+  airAndGround: "對空與對地", builder: "建築工人", active: "啟動", depleted: "耗盡", wall: "對城牆" };
 const VALUES = {
   single: "單體", splash: "濺射", area: "範圍", chain: "連鎖", none: "無", both: "地面與空中", ground: "地面", air: "空中",
   defenses: "防禦建築", regular: "一般", dark: "暗黑", Common: "普通", Epic: "史詩", Active: "主動", Passive: "被動",

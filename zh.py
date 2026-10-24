@@ -143,6 +143,7 @@ ZH_NAMES = {
     "Furnace": "烈焰熔爐",
     "Meteor Golem": "隕石戈侖",
     "Ruin Witch": "廢墟女巫",
+    "Ruin Knight": "廢墟騎士",
     "Super Barbarian": "超級野蠻人",
     "Super Archer": "超級弓箭手",
     "Super Giant": "超級巨人",
@@ -317,4 +318,5 @@ ZH_NAMES = {
     "Rocket Backpack": "火箭背包",
     "Stun Blaster": "暈眩衝擊槍",
     "Electro Fangs": "雷電之牙",
+    "Portal Pendant": "傳送吊飾",
 }

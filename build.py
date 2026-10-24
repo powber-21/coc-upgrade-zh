@@ -63,6 +63,8 @@ GROUPS = [
 ]
 
 SKIP_KEYS = {"images", "image", "badge", "level"}
+# 兵種底下附帶的召喚單位（有自己的屬性和等級），在項目頁另外列一張表
+SUB_UNITS = ("ruinKnight",)
 TIME_KEYS = {"days", "hours", "minutes", "seconds"}
 
 # 每個 base 的「需求欄位 → 對應建築 id」，用來推算各大本營等級的上限
@@ -145,7 +147,9 @@ def attrs(d):
             continue
         if v in (None, "", []) or (k.endswith("Resource") and k[:-8] in d):
             continue
-        if is_time(v):
+        if k in SUB_UNITS and isinstance(v, dict):
+            out += [[f"{k}.{p}", x] for p, x in attrs(v)]
+        elif is_time(v):
             out.append([k, {"t": secs(v)}])
         elif isinstance(d.get(k + "Resource"), str):
             out.append([k, {"c": v, "r": d[k + "Resource"]}])
@@ -237,6 +241,10 @@ def make_item(d, base, gkey, uid):
     if d.get("levels"):
         item["tables"].append(table(d["levels"]))
         item["_levels"] = d["levels"]
+    for k in SUB_UNITS:
+        sub = d.get(k)
+        if isinstance(sub, dict) and sub.get("levels"):
+            item["tables"].append(table(sub["levels"], ZH_NAMES.get(sub["name"]) or sub["name"]))
     for m in d.get("modules") or []:
         t = table(m["upgrades"], m.get("name"))
         t["sub"] = m.get("controls")
