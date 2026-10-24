@@ -42,7 +42,7 @@ GROUPS = [
     ("home", "guardians", "守衛"),
     ("home", "other", "其他建築"),
     ("home", "other/helpers", "助手"),
-    ("builder", "builder-hall", "建築大師基地"),
+    ("builder", "builder-hall", "建築大師大本營"),
     ("builder", "defenses", "防禦建築"),
     ("builder", "traps", "陷阱"),
     ("builder", "walls", "城牆"),
@@ -51,7 +51,7 @@ GROUPS = [
     ("builder", "troops", "兵種"),
     ("builder", "heroes", "英雄"),
     ("builder", "other", "其他建築"),
-    ("clan-capital", "halls", "都城大廳"),
+    ("clan-capital", "halls", "首都大本營"),
     ("clan-capital", "defenses", "防禦建築"),
     ("clan-capital", "traps", "陷阱"),
     ("clan-capital", "walls", "城牆"),
@@ -421,7 +421,7 @@ def main():
         ids.sort(key=lambda i: order[i])
         groups.append({"key": gkey, "base": base, "zh": zh, "items": ids})
 
-    # 各大本營 / 建築大師基地等級的最高等級
+    # 各大本營 / 建築大師大本營等級的最高等級
     for base, fields in HALL_FIELD.items():
         hall_id = f"{base}-town-hall" if base == "home" else f"{base}-builder-hall"
         max_hall = len(items[hall_id]["_levels"])

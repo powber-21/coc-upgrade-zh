@@ -93,10 +93,10 @@ function homeTech() {
   const dark = (x, k) => attrOf(x, k) === "dark";
   return [
     sec("聖水兵", t.filter(x => !dark(x, "troopType"))),
-    sec("暗黑兵", t.filter(x => dark(x, "troopType"))),
+    sec("闇黑兵", t.filter(x => dark(x, "troopType"))),
     sec("超級兵", G("home/super-troops")),
     sec("法術", s.filter(x => !dark(x, "spellType"))),
-    sec("暗黑法術", s.filter(x => dark(x, "spellType"))),
+    sec("闇黑法術", s.filter(x => dark(x, "spellType"))),
     sec("攻城機器", G("home/siege-machines")),
     sec("非戰鬥人員", G("home/other/helpers")),
   ];
@@ -121,14 +121,14 @@ const VILLAGES = {
       ["heroes", "英雄", () => [sec("英雄", G("builder/heroes"))]],
       ["tech", "科技", () => [sec("兵種", G("builder/troops"))]],
       ["build", "建築", () => [
-        sec("建築大師基地", G("builder/builder-hall")), sec("防禦建築", [...G("builder/walls"), ...G("builder/defenses")]),
+        sec("建築大師大本營", G("builder/builder-hall")), sec("防禦建築", [...G("builder/walls"), ...G("builder/defenses")]),
         sec("陷阱", G("builder/traps")), sec("資源建築", G("builder/resource-buildings")),
         sec("軍隊建築", G("builder/army-buildings")), sec("其他建築", G("builder/other")),
       ]],
     ],
   },
   "clan-capital": {
-    zh: "部落首都", tag: "都城大廳、區域建築與兵種",
+    zh: "部落首都", tag: "首都大本營、區域建築與兵種",
     tabs: [
       ["tech", "科技", () => [sec("兵種", G("clan-capital/troops")), sec("法術", G("clan-capital/spells"))]],
       ["build", "建築", () => [
@@ -186,7 +186,7 @@ function hallView() {
   const max = DATA.items[hallId].hallMax.length;
   if (!state.hall || state.hall > max) state.hall = max;
   const h = state.hall;
-  const hallName = base === "home" ? "大本營" : "建築大師基地";
+  const hallName = base === "home" ? "大本營" : "建築大師大本營";
   const countAt = it => {
     if (!it.count) return null;
     let best = null;
@@ -225,7 +225,7 @@ function itemView(it) {
   // 我的大本營：表中超過這個大本營能升的等級會變淡
   const isHall = it.id === "home-town-hall" || it.id === "builder-builder-hall";
   const hm = !isHall && (it.base === "home" || it.base === "builder") && it.hallMax ? it.hallMax : null;
-  const hallName = it.base === "builder" ? "建築大師基地" : "大本營";
+  const hallName = it.base === "builder" ? "建築大師大本營" : "大本營";
   const my = hm ? Math.min(state.my[it.base] || hm.length, hm.length) : 0;
   const myMax = hm ? hm[my - 1] || 0 : Infinity;
   // 召喚單位、武器這些附帶的表格（extra）有自己的等級，不算進「最高」，也不跟大本營比較
