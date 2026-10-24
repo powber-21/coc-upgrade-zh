@@ -408,7 +408,14 @@ def main():
                 st = d.get("superTroop")
                 if not st:
                     continue
-                st = dict(st, base="home")
+                # 有些超級部隊的資料沒寫大本營需求；它們的等級跟原兵種相同，
+                # 就借用原兵種同等級的需求，「依大本營等級」才找得到它們
+                reg = {lv["level"]: lv for lv in d["levels"]}
+                levels = [lv if lv.get("townHallRequired") is not None or lv["level"] not in reg else
+                          {**lv, **{k: reg[lv["level"]][k] for k in ("townHallRequired", "laboratoryRequired")
+                                    if k in reg[lv["level"]]}}
+                          for lv in st["levels"]]
+                st = dict(st, base="home", levels=levels)
                 uid = "home-" + st["id"]
                 it = make_item(st, "home", gkey, uid)
                 it["from"] = "home-" + d["id"]
@@ -467,6 +474,9 @@ def main():
             if not has_req:
                 continue
             it["hallMax"] = [max_level(uid, h) for h in range(1, max_hall + 1)]
+            # 遊戲裡超級部隊要 11 本才能開啟
+            if "from" in it:
+                it["hallMax"] = [lv if h >= 11 else 0 for h, lv in enumerate(it["hallMax"], 1)]
         items[hall_id]["hallMax"] = list(range(1, max_hall + 1))
 
     for it in items.values():
