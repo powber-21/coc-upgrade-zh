@@ -540,7 +540,7 @@ def write_site(data):
     shell = open(os.path.join(HERE, "src/shell.html"), encoding="utf8").read()
     items, groups = data["items"], data["groups"]
     group_zh = {g["key"]: g["zh"] for g in groups}
-    base_zh = {"home": "家鄉", "builder": "夜世界", "clan-capital": "部落都城", "clan": "部落"}
+    base_zh = {"home": "家鄉", "builder": "夜世界", "clan-capital": "部落首都", "clan": "部落"}
 
     pre = prerender()
     loading = '<div class="loading" role="status">載入中<i></i><i></i><i></i></div>'

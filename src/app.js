@@ -128,7 +128,7 @@ const VILLAGES = {
     ],
   },
   "clan-capital": {
-    zh: "部落都城", tag: "都城大廳、區域建築與兵種",
+    zh: "部落首都", tag: "都城大廳、區域建築與兵種",
     tabs: [
       ["tech", "科技", () => [sec("兵種", G("clan-capital/troops")), sec("法術", G("clan-capital/spells"))]],
       ["build", "建築", () => [
