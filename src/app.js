@@ -288,11 +288,10 @@ function faqView() {
   crumbs([]);  // 路徑只顯示「數據首頁」，目前這頁由右上角亮起來的連結表示
   const qa = [
     ["這個網站是做什麼的？", "查詢部落衝突（Clash of Clans）所有兵種、建築、法術、英雄、裝備與戰寵的升級費用、升級時間和屬性。"],
-    ["為什麼做這個網站？", "想查資料又不想每次都翻 wiki，所以自己做了一個。"],
-    ["資料從哪裡來？準確嗎？", `數據來自開源專案 <a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>（MIT 授權，© 2026 Christopher Pezza）。本站只負責整理成中文和方便查詢，數字和原始資料一致。遊戲剛改版時，資料可能要過幾天才會更新。`],
+    ["資料從哪裡來？", `數據來自開源專案 <a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>（MIT 授權，© 2026 Christopher Pezza）。本站只負責整理成中文和方便查詢，數字和原始資料一致。遊戲剛改版時，資料可能要過幾天才會更新。`],
     ["多久更新一次？", "每天自動檢查一次，資料來源一更新，本站隔天就會跟著更新。"],
     ["中文名稱為什麼跟遊戲裡不一樣？", "中文名稱是對照翻譯，大部分和遊戲一致，少數可能略有不同。新推出的兵種或建築，會先顯示英文名稱。"],
-    ["「我的大本營」和「月卡折扣」怎麼用？", "在兵種或建築頁按「−」「+」調成你的大本營等級，表中升不到的等級會變淡；選擇月卡折扣後，所有費用和時間會自動打折。這兩個設定會記在你的手機或電腦上，下次打開還在。"],
+    ["「我的大本營」和「月卡折扣」怎麼用？", "在兵種或建築頁按「−」「+」調成你的大本營等級，表中升不到的等級會變淡；選擇月卡折扣後，所有費用和時間會自動打折。"],
     ["可以像 App 一樣使用嗎？", "可以。iPhone 用 Safari 打開本站，按「分享」→「加入主畫面」，之後從主畫面打開就是全螢幕，跟 App 一樣。Android 用 Chrome 打開，按右上角選單 →「加到主畫面」。"],
     ["需要付費或登入嗎？", "不用。完全免費，不需要帳號。"],
     ["這是官方網站嗎？", "不是。本站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href=\"https://www.supercell.com/fan-content-policy\" target=\"_blank\" rel=\"noopener\">www.supercell.com/fan-content-policy</a>."],
