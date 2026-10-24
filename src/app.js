@@ -77,10 +77,11 @@ function tile(it, extra = "", dim = false) {
 const attrOf = (it, k) => (it.attrs.find(a => a[0] === k) || [])[1];
 const G = key => (DATA.groups.find(g => g.key === key) || { items: [] }).items.map(id => DATA.items[id]);
 const sec = (title, items) => ({ title, items });
+// 英雄裝備屬於哪個英雄（英雄的項目 id）
+const owner = e => "home-" + attrOf(e, "hero");
 
 function homeHeroes() {
   const heroes = G("home/heroes"), eq = G("home/hero-equipment");
-  const owner = e => "home-" + attrOf(e, "hero");
   return [
     sec("英雄", heroes),
     sec("戰寵", G("home/pets")),
@@ -210,7 +211,10 @@ function itemView(it) {
   const cfg = where && VILLAGES[where.v];
   const tabName = cfg ? cfg.tabs.find(t => t[0] === where.t)[1] : "";
   crumbs(cfg ? [[cfg.zh, where.v], [tabName, `${where.v}.${where.t}`], [nameOf(it)]] : [[nameOf(it)]]);
-  const rel = [it.super, it.from].filter(Boolean).map(id => DATA.items[id]);
+  // 捷徑連結：兵種和超級部隊互相連結，英雄頁列出自己的裝備，裝備頁連回所屬英雄
+  const gear = it.group === "home/heroes" ? G("home/hero-equipment").filter(e => owner(e) === it.id) : [];
+  const hero = it.group === "home/hero-equipment" ? DATA.items[owner(it)] : null;
+  const rel = [...[it.super, it.from].filter(Boolean).map(id => DATA.items[id]), ...gear, ...(hero ? [hero] : [])];
   const attrHtml = it.attrs.length ? `<dl class="attrs">${it.attrs.map(([k, v]) => {
     if (Array.isArray(v)) return `<div class="wide"><dt>${esc(label(k))}</dt><dd><ul>${v.map(x => `<li>${esc(value(x))}</li>`).join("")}</ul></dd></div>`;
     let shown;
