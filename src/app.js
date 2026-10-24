@@ -346,7 +346,7 @@ function updatesView() {
         <button type="button" class="fold" data-fold>▴ 收合 ${fmtDay(day.date)}</button></details>`;
     }).join("") || `<p class="note">目前還沒有版本更新紀錄。</p>`}</div>`;
 }
-// 最近一次資料更新在 3 天內，「版本更新」連結旁顯示紅點
+// 最近一次資料更新在 3 天內、而且使用者還沒看過，「版本更新」連結旁顯示紅點
 const logRecent = () => DATA.log && DATA.log.length && Date.now() - new Date(DATA.log[0].date + "T00:00:00+08:00") < 3 * 86400e3;
 
 function footer() {
@@ -409,5 +409,11 @@ window.addEventListener("hashchange", () => { $("#q").value = ""; render(); wind
 $("#q").addEventListener("input", render);
 // 版本更新、常見問題頁：右上角對應的連結亮起來，讓使用者知道自己在哪一頁
 document.querySelectorAll(".toplinks a").forEach(a => { if (PAGE_ITEM && a.getAttribute("href").endsWith(PAGE_ITEM + "/")) a.setAttribute("aria-current", "page"); });
-if (logRecent() && $("#loglink")) $("#loglink").insertAdjacentHTML("afterbegin", `<i class="dot" title="最近有資料更新"></i>`);
+// 看過版本更新頁就記下最新的日期，紅點不再出現，直到下一次資料更新
+let logSeen = "";
+try {
+  if (PAGE_ITEM === "updates" && DATA.log && DATA.log.length) localStorage.setItem("coc-log-seen", DATA.log[0].date);
+  logSeen = localStorage.getItem("coc-log-seen") || "";
+} catch (e) {}
+if (logRecent() && logSeen !== DATA.log[0].date && $("#loglink")) $("#loglink").insertAdjacentHTML("afterbegin", `<i class="dot" title="最近有資料更新"></i>`);
 render();
