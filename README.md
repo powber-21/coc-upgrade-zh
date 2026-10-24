@@ -13,7 +13,8 @@
 
 ## 運作方式
 
-- `build.py` 把 [clash-of-clans-data](https://github.com/chiefpansancolt/clash-of-clans-data) 的 JSON 轉成單一網頁，`zh.py` 是中文名稱對照
+- `build.py` 把 [clash-of-clans-data](https://github.com/chiefpansancolt/clash-of-clans-data) 的 JSON 轉成單一網頁
+- `zh.json` 是所有中文翻譯（名稱、欄位、攻擊模式、數值文字）
 - GitHub Actions（`.github/workflows/deploy.yml`）每天台灣時間 04:00 檢查資料，有更新就重新產生並發佈到 GitHub Pages
 
 ## 授權

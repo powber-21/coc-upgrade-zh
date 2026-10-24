@@ -8,66 +8,8 @@ const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 
-const LABELS = {
-  hitpoints: "生命值", dps: "每秒傷害", damagePerShot: "每擊傷害", damagePerSecond: "每秒傷害", damagePerHit: "每擊傷害",
-  buildCost: "升級費用", upgradeCost: "升級費用", researchCost: "研究費用", buildTime: "升級時間", upgradeTime: "升級時間", researchTime: "研究時間",
-  xpGained: "獲得經驗", townHallRequired: "需大本營", laboratoryRequired: "需實驗室", heroHallLevelRequired: "需英雄大廳",
-  petHouseLevelRequired: "需戰寵小屋", blacksmithLevelRequired: "需鐵匠鋪", builderHallRequired: "需建築大師基地",
-  builderHallLevelRequired: "需建築大師基地", starLabRequired: "需星空實驗室", districtHallRequired: "需區域大廳", capitalHallRequired: "需都城大廳",
-  healthRecovery: "生命回復", hitpointIncrease: "生命提升", hpRecoveryIncrease: "回復提升",
-  upgradeShinyOre: "閃亮礦石", upgradeGlowingOre: "發光礦石", upgradeStarryOre: "星光礦石",
-  capacity: "容量", unitsPerCamp: "每營數量", damage: "傷害", productionRate: "每小時產量", deathDamage: "死亡傷害",
-  damageVsWalls: "對城牆傷害", maxBuildings: "建築數上限", maxTraps: "陷阱數上限", housingSpace: "人口", spellDuration: "持續時間",
-  radius: "半徑", wallRings: "城牆戒指", troopCapacity: "部隊容量", spellCapacity: "法術容量", siegeMachineCapacity: "攻城機器容量",
-  spellStorageCapacity: "法術容量", abilityLevel: "技能等級", speedIncrease: "速度提升", damageIncrease: "傷害提升",
-  unlockedUnit: "解鎖兵種", unlockedSpell: "解鎖法術", unlockedHero: "解鎖英雄", unlockedPet: "解鎖戰寵", unlockedSiegeMachine: "解鎖攻城機器",
-  heroSlots: "英雄欄位", stat: "數值", sparkyStones: "火花石", healingPerSecond: "每秒治療", healingPerPulse: "每波治療",
-  numberOfTargets: "目標數", labLevelCap: "實驗室上限", storageCapacity: "儲存容量", oreCapacity: "礦石容量", maxEquipmentLevel: "裝備等級上限",
-  equipmentUnlocked: "解鎖裝備", lifetime: "存在時間", stunDuration: "暈眩時間", spawnCount: "召喚數量", supercharge: "超級充能",
-  troopLevel: "部隊等級", workRate: "工作速率", xpRequired: "所需經驗", cumulativeXp: "累計經驗", perks: "福利",
-  // 屬性
-  movementSpeed: "移動速度", range: "攻擊範圍", attackSpeed: "攻擊間隔(秒)", damageType: "傷害類型", targetType: "攻擊目標",
-  troopType: "類型", barrackLevelRequired: "需訓練營", size: "佔地", preferredTarget: "優先目標", specialAbility: "特殊技能",
-  rarity: "稀有度", abilityType: "技能類型", hero: "所屬英雄", unlockRequirement: "取得方式", spellType: "類型",
-  spellFactoryLevelRequired: "需法術工廠", workshopLevelRequired: "需攻城機器工坊", boostCost: "增幅費用", boostDuration: "增幅時間",
-  regularLevelRequired: "需原兵種等級", attackType: "攻擊方式", searchRadius: "索敵範圍", triggerRadius: "觸發範圍",
-  favoriteTarget: "優先目標", maxCapacity: "容量上限", sellingPrice: "售價", craftingPhase: "工藝階段", isCurrent: "目前可用",
-  "donationCost.amount": "捐贈費用", "donationCost.resource": "捐贈資源", "donationCost.gemsOrRaidMedals": "捐贈寶石/突襲獎牌",
-  "gold": "金幣", "elixir": "聖水", "darkElixir": "暗黑重油",
-  dpsIncrease: "每秒傷害提升", abilityDuration: "技能持續", troopUnlocked: "解鎖兵種", builderBarracksRequired: "需建築大師訓練營",
-  splashRadius: "濺射半徑", shotsPerBurst: "每輪發射數", timeBetweenBursts: "每輪間隔", damageRadius: "傷害半徑", minRange: "最小射程",
-  attackSpeedIncrease: "攻速提升", spellUnlocked: "解鎖法術", requiredSpellFactory: "需法術工廠", secondaryChainDamagePerShot: "第二段連鎖傷害",
-  tertiaryChainDamagePerShot: "第三段連鎖傷害", chainDamagePerShot: "連鎖傷害", incomingDamageReduction: "受到傷害減免",
-  selfHealingPerSecond: "每秒自我治療", projectileDamage: "投射物傷害", triggerRange: "觸發範圍", chainRange: "連鎖範圍",
-  maxChainTargets: "連鎖目標上限", availableFromLevel: "可用起始等級", spellRadius: "法術半徑", rechargeTime: "充能時間", maxDps: "最大每秒傷害",
-  durationAttacks: "持續攻擊次數", movementSpeedIncrease: "移速提升", damagePerShotIncrease: "每擊傷害提升", slowDownDuration: "減速持續",
-  abilityDamage: "技能傷害", numberOfAttacks: "攻擊次數", rageDuration: "狂暴持續", rageDamageIncrease: "狂暴傷害提升", rageSpeedIncrease: "狂暴速度提升",
-  summonCooldown: "召喚冷卻", auraRange: "光環範圍", timeBetweenPulses: "脈衝間隔", numberOfPulses: "脈衝次數", boostTime: "加速時間",
-  healingPerSecondOnHeroes: "對英雄每秒治療", healingPerPulseOnHeroes: "對英雄每波治療", poisonMaxDps: "毒素最大每秒傷害",
-  buildingDamagePercent: "建築傷害%", troopDamagePercent: "部隊傷害%", damageVsHeroes: "對英雄傷害", springCapacity: "彈簧容量",
-  dpsInitial: "初始每秒傷害", dpsAfter1p5s: "1.5秒後每秒傷害", infernoInitialDps: "初始每秒傷害", repairPerSecond: "每秒修復", repairPerHit: "每次修復",
-  pushStrength: "擊退力道", skeletonLevel: "骷髏等級", spawnedUnits: "生成單位", duration: "持續時間", freezeTime: "冰凍時間",
-  totalHealing: "總治療量", maxDamagePerSecond: "最大每秒傷害", speedDecrease: "速度下降", attackRateDecrease: "攻速下降",
-  invisibilityDuration: "隱形時間", reviveDuration: "復活時間", cooldownTime: "冷卻時間", healPerHit: "每擊回復", unitName: "單位",
-  guardianType: "守衛類型", instances: "數量", passiveAbility: "被動技能", wallDamageMultiplier: "城牆傷害倍率", hpDecayPerSecond: "每秒生命衰減",
-  armorHitpoints: "護甲生命值", damageVsResources: "對資源傷害", heroLevelCaps: "英雄等級上限", maxEquipmentLevel: "裝備等級上限",
-  common: "普通", epic: "史詩", shinyOre: "閃亮礦石", glowyOre: "發光礦石", starryOre: "星光礦石", ability: "技能", weapon: "武器", name: "名稱",
-  targets: "目標", gearUp: "齒輪強化", cost: "費用", time: "時間", requiresLevel: "需等級", timeGainedMinutes: "獲得時間(分)", boostDurationMinutes: "加速時間(分)",
-  ruinKnight: "廢墟騎士", ruinKnightLevel: "廢墟騎士等級", maximumRuinKnightsSummoned: "被召喚單位總數",
-  redeploySpeedIncrease: "重新部署速度提升", portalTileRadius: "傳送半徑(格)", healingOnRedeploy: "重新部署時治療",
-  hasteOnRedeploy: "重新部署時加速效果", recallCapacity: "可召回的部隊空間",
-};
-const MODES = { normal: "一般", multiTarget: "多目標", singleTarget: "單目標", ground: "對地", air: "對空", burst: "連發", sniper: "狙擊",
-  gearUp: "齒輪強化", geared: "齒輪強化", gearedUpBurst: "齒輪強化連發", gearedUpFastAttack: "齒輪強化快攻", longRange: "遠程", fastAttack: "快速攻擊",
-  stage1: "第一階段", stage2: "第二階段", stage3: "第三階段", rage: "狂暴", poison: "毒藥", invisibility: "隱形", earthquake: "地震",
-  airAndGround: "對空與對地", builder: "建築工人", active: "啟動", depleted: "耗盡", wall: "對城牆" };
-const VALUES = {
-  single: "單體", splash: "濺射", area: "範圍", chain: "連鎖", none: "無", both: "地面與空中", ground: "地面", air: "空中",
-  defenses: "防禦建築", regular: "一般", dark: "暗黑", Common: "普通", Epic: "史詩", Active: "主動", Passive: "被動",
-  Gold: "金幣", Elixir: "聖水", "Dark Elixir": "暗黑重油", Gems: "寶石", "Builder Gold": "建築大師金幣", "Builder Elixir": "建築大師聖水",
-  "Capital Gold": "都城金幣", "Gold or Elixir": "金幣或聖水", "Builder Gold or Builder Elixir": "建築金幣或聖水",
-  Any: "任意", Resources: "資源建築", Walls: "城牆", Heroes: "英雄", Hero: "英雄", None: "無", true: "是", false: "否",
-};
+// 中文翻譯在 zh.json（build.py 放進 data.js）
+const { labels: LABELS, modes: MODES, values: VALUES } = DATA.zh;
 
 function label(key) {
   let mode = "";
@@ -286,7 +228,8 @@ function itemView(it) {
   const hallName = it.base === "builder" ? "建築大師基地" : "大本營";
   const my = hm ? Math.min(state.my[it.base] || hm.length, hm.length) : 0;
   const myMax = hm ? hm[my - 1] || 0 : Infinity;
-  const levels = it.tables.flatMap(t => t.rows.map(r => r[0]).filter(x => typeof x === "number"));
+  // 召喚單位、武器這些附帶的表格（extra）有自己的等級，不算進「最高」，也不跟大本營比較
+  const levels = it.tables.filter(t => !t.extra).flatMap(t => t.rows.map(r => r[0]).filter(x => typeof x === "number"));
   const top = levels.length ? Math.max(...levels) : 0;
   const panel = hm || used.length ? `<div class="panel">
     ${hm ? `<div class="row"><span class="lbl">我的${hallName}</span><div class="step">
@@ -298,8 +241,8 @@ function itemView(it) {
     ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
-    <div class="scroll"><table><thead><tr><th>等級</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${typeof r[0] === "number" ? `<span class="lvb">${r[0]}</span>` : esc(r[0] ?? "")}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
+    <tbody>${t.rows.map(r => `<tr${!t.extra && typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${typeof r[0] === "number" ? `<span class="lvb">${r[0]}</span>` : esc(r[0] ?? "")}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>

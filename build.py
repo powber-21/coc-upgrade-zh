@@ -14,12 +14,14 @@ from html import escape as esc
 
 from PIL import Image
 
-from zh import ZH_NAMES
-
 SRC = sys.argv[1]
 SITE_URL = "https://powber-21.github.io/coc-upgrade-zh"
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "site")
+
+# 所有中文翻譯（名稱、欄位、攻擊模式、數值文字）都在 zh.json
+ZH = json.load(open(os.path.join(HERE, "zh.json"), encoding="utf8"))
+ZH_NAMES = ZH["names"]
 
 # (base, 資料夾, 中文分類名)，順序即顯示順序
 GROUPS = [
@@ -63,8 +65,8 @@ GROUPS = [
 ]
 
 SKIP_KEYS = {"images", "image", "badge", "level"}
-# 兵種底下附帶的召喚單位（有自己的屬性和等級），在項目頁另外列一張表
-SUB_UNITS = ("ruinKnight",)
+# 「每一個建築」各自的費用清單（例如第 2 個軍營要多少錢），在項目頁另外列一張表
+INSTANCE_LISTS = {"instances": "每個建築的建造費用", "placementCosts": "每間小屋的放置費用"}
 TIME_KEYS = {"days", "hours", "minutes", "seconds"}
 
 # 每個 base 的「需求欄位 → 對應建築 id」，用來推算各大本營等級的上限
@@ -87,6 +89,21 @@ def is_time(v):
     return isinstance(v, dict) and set(v) <= TIME_KEYS and v
 
 
+def has_levels(v):
+    """召喚單位、技能、大本營武器這類「有自己一套等級」的子資料。"""
+    return isinstance(v, dict) and isinstance(v.get("levels"), list) and bool(v["levels"])
+
+
+def camel(name):
+    """"Hog Rider" -> "hogRider"，當作欄位名稱的開頭，網站會把它換成項目的中文名稱。"""
+    w = [x for x in "".join(c if c.isalnum() else " " for c in name).split()]
+    return w[0].lower() + "".join(x.capitalize() for x in w[1:]) if w else name
+
+
+def zh_name(name):
+    return ZH_NAMES.get(name) or name
+
+
 def secs(t):
     return t.get("days", 0) * 86400 + t.get("hours", 0) * 3600 + t.get("minutes", 0) * 60 + t.get("seconds", 0)
 
@@ -105,6 +122,8 @@ def flatten(obj, prefix="", multi=False):
                 out += flatten(sv, f"@{m}." if multi else "")
         elif k == "stats" and isinstance(v, dict):
             out += flatten(v)
+        elif has_levels(v):
+            continue  # 有自己等級的子資料（例如大本營武器）另外列表，見 sub_tables
         elif isinstance(v, dict):
             out += flatten(v, path + ".")
         elif isinstance(v, list):
@@ -145,10 +164,17 @@ def attrs(d):
                  "superTroop", "modules", "availablePerTownHall", "availablePerBuilderHall",
                  "availablePerCapitalHall", "availablePerDistrict", "isCurrent"):
             continue
-        if v in (None, "", []) or (k.endswith("Resource") and k[:-8] in d):
+        if v in (None, "", []) or (k.endswith("Resource") and k[:-8] in d) or k in INSTANCE_LISTS:
             continue
-        if k in SUB_UNITS and isinstance(v, dict):
+        if has_levels(v):
+            # 子資料的固定屬性放在這裡（例如「廢墟騎士 · 移動速度」），每一級的數值見 sub_tables
             out += [[f"{k}.{p}", x] for p, x in attrs(v)]
+        elif isinstance(v, list) and v and all(has_levels(x) and x.get("name") for x in v):
+            for u in v:
+                out += [[f"{camel(u['name'])}.{p}", x] for p, x in attrs(u)]
+        elif isinstance(v, list) and v and all(isinstance(x, dict) and x.get("name") for x in v):
+            # 例如守衛哨站的防守部隊：[{name, count}] -> ["狂暴野蠻人 ×1", ...]
+            out.append([k, [zh_name(x["name"]) + (f" ×{x['count']}" if "count" in x else "") for x in v]])
         elif is_time(v):
             out.append([k, {"t": secs(v)}])
         elif isinstance(d.get(k + "Resource"), str):
@@ -226,6 +252,47 @@ def available(d):
     return None
 
 
+def sub_tables(d):
+    """子資料的表格：召喚單位、技能、大本營武器（每個大本營等級一張），以及每個建築各自的費用。
+    標上 extra，網站就不會拿它們的等級去算「最高等級」或跟大本營等級比較。"""
+    out = []
+
+    def add(t, en=None, head=None):
+        t["extra"] = True
+        if en:
+            t["en"] = en  # 英文原名（中文名稱還沒翻譯時可以對照）
+        if head:
+            t["head"] = head
+        out.append(t)
+
+    def unit_table(u, title=None):
+        # 技能的等級欄位叫 abilityLevel，統一當成等級
+        levels = [{**{k: v for k, v in lv.items() if k != "abilityLevel"}, "level": lv.get("level", lv.get("abilityLevel"))}
+                  for lv in u["levels"]]
+        name = u.get("name")
+        add(table(levels, title or (zh_name(name) if name else None)), en=name)
+
+    for k, v in d.items():
+        if k in ("superTroop", "levels", "modules"):
+            continue
+        if k in INSTANCE_LISTS and isinstance(v, list):
+            rows = [{**{a: b for a, b in x.items() if a != "instance"}, "level": x.get("instance")} for x in v]
+            add(table(rows, INSTANCE_LISTS[k]), head="第幾個")
+        elif has_levels(v):
+            unit_table(v)
+        elif isinstance(v, list) and v and all(has_levels(x) for x in v):
+            for u in v:
+                unit_table(u)
+    # 大本營武器：每個大本營等級的武器各有一套等級
+    for lv in d.get("levels") or []:
+        for k, v in lv.items():
+            if has_levels(v):
+                name = v.get("name")
+                t_title = f"{zh_name(name) if name else k}（{zh_name(d['name'])} {lv.get('level')} 級）"
+                unit_table(v, t_title)
+    return out
+
+
 def make_item(d, base, gkey, uid):
     item = {
         "id": uid,
@@ -241,10 +308,7 @@ def make_item(d, base, gkey, uid):
     if d.get("levels"):
         item["tables"].append(table(d["levels"]))
         item["_levels"] = d["levels"]
-    for k in SUB_UNITS:
-        sub = d.get(k)
-        if isinstance(sub, dict) and sub.get("levels"):
-            item["tables"].append(table(sub["levels"], ZH_NAMES.get(sub["name"]) or sub["name"]))
+    item["tables"] += sub_tables(d)
     for m in d.get("modules") or []:
         t = table(m["upgrades"], m.get("name"))
         t["sub"] = m.get("controls")
@@ -400,7 +464,7 @@ def main():
         it.pop("_levels", None)
 
     data = {"groups": groups, "items": items, "res": {k: thumb(v, 48, inline=True) for k, v in RES_ICONS.items()},
-            "updated": data_date()}
+            "updated": data_date(), "zh": {k: ZH[k] for k in ("labels", "modes", "values")}}
     write_site(data)
 
 
