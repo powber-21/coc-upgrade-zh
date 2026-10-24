@@ -158,7 +158,8 @@ table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabu
 th, td { padding: 9px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line-soft); }
 thead th { position: sticky; top: 0; background: var(--night); font-size: 12px; font-weight: 700; color: #dce2ea; text-align: right; vertical-align: bottom; white-space: normal; min-width: 64px; line-height: 1.3; border-bottom: 0; }
 tbody tr:nth-child(even) td { background: var(--sunk); }
-tbody tr.above td { opacity: .38; }
+/* 第一欄是固定欄，往右滑時其他欄會從它底下經過；只讓裡面的等級標籤變淡，格子本身保持不透明 */
+tbody tr.above td:not(:first-child), tbody tr.above td:first-child .lvb { opacity: .38; }
 th:first-child, td:first-child { position: sticky; left: 0; text-align: center; background: var(--surface); z-index: 1; border-right: 1px solid var(--line-soft); }
 thead th:first-child { background: var(--night); z-index: 2; }
 td:first-child { font-weight: 700; white-space: nowrap; }
