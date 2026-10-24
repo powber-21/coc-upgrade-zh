@@ -152,7 +152,8 @@ def table(levels, title=None):
             if path not in cols:
                 cols.append(path)
         lvl = lv.get("level")
-        rows.append((f"蓄能 {lvl}" if lv.get("supercharge") else lvl, row))
+        # 超級蓄能的等級寫成 {"sc": 1}，網站會顯示成蓄能圖示加等級
+        rows.append(({"sc": lvl} if lv.get("supercharge") else lvl, row))
     cols = [c for c in cols if any(r.get(c) not in (None, "") for _, r in rows)]
     return {"title": title, "cols": cols, "rows": [[lvl] + [r.get(c) for c in cols] for lvl, r in rows]}
 
@@ -173,8 +174,11 @@ def attrs(d):
             for u in v:
                 out += [[f"{camel(u['name'])}.{p}", x] for p, x in attrs(u)]
         elif isinstance(v, list) and v and all(isinstance(x, dict) and x.get("name") for x in v):
-            # 例如守衛哨站的防守部隊：[{name, count}] -> ["狂暴野蠻人 ×1", ...]
-            out.append([k, [zh_name(x["name"]) + (f" ×{x['count']}" if "count" in x else "") for x in v]])
+            if all("count" in x for x in v):
+                # 例如守衛哨站的防守部隊：網站用英文名稱找到兵種，顯示圖示並連到它的頁面
+                out.append([k, [{"u": x["name"], "zh": zh_name(x["name"]), "n": x["count"]} for x in v]])
+            else:
+                out.append([k, [zh_name(x["name"]) for x in v]])
         elif is_time(v):
             out.append([k, {"t": secs(v)}])
         elif isinstance(d.get(k + "Resource"), str):
@@ -229,6 +233,7 @@ RES_ICONS = {
     "Shiny Ore": "images/other/ore/shiny-ore.png",
     "Glowy Ore": "images/other/ore/glowy-ore.png",
     "Starry Ore": "images/other/ore/starry-ore.png",
+    "Supercharge": "images/other/supercharge.png",
 }
 
 

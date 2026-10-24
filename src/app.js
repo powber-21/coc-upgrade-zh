@@ -67,6 +67,13 @@ function cell(v, col) {
   return esc(fmtN(value(v)));
 }
 
+// 表格第一欄：一般等級是深色方塊；超級蓄能（{sc: 1}）加上蓄能圖示
+function lvCell(l) {
+  if (typeof l === "number") return `<span class="lvb">${l}</span>`;
+  if (l && typeof l === "object" && "sc" in l) return `<span class="lvb sc"><img src="${DATA.res.Supercharge}" alt="超級蓄能" title="超級蓄能">${l.sc}</span>`;
+  return esc(l ?? "");
+}
+
 const img = (it, cls = "") => it.img ? `<img src="${BASE}${it.img}" alt="" class="${cls}" loading="lazy">` : `<div class="noimg ${cls}">${esc((it.zh || it.en)[0])}</div>`;
 const nameOf = it => it.zh || it.en;
 
@@ -216,6 +223,14 @@ function itemView(it) {
   const hero = it.group === "home/hero-equipment" ? DATA.items[owner(it)] : null;
   const rel = [...[it.super, it.from].filter(Boolean).map(id => DATA.items[id]), ...gear, ...(hero ? [hero] : [])];
   const attrHtml = it.attrs.length ? `<dl class="attrs">${it.attrs.map(([k, v]) => {
+    if (Array.isArray(v) && v.length && v.every(x => x && x.u)) {
+      // 防守部隊：找得到對應的兵種就顯示圖示並連到它的頁面
+      const unit = x => Object.values(DATA.items).find(i => i.en === x.u && i.base === it.base) || Object.values(DATA.items).find(i => i.en === x.u);
+      return `<div class="wide"><dt>${esc(label(k))}</dt><dd><div class="links">${v.map(x => {
+        const u = unit(x), name = esc((u && nameOf(u)) || x.zh || x.u) + ` ×${x.n}`;
+        return u ? `<a href="${itemHref(u.id)}">${img(u)}${name} ›</a>` : `<span class="unit">${name}</span>`;
+      }).join("")}</div></dd></div>`;
+    }
     if (Array.isArray(v)) return `<div class="wide"><dt>${esc(label(k))}</dt><dd><ul>${v.map(x => `<li>${esc(value(x))}</li>`).join("")}</ul></dd></div>`;
     let shown;
     if (v && typeof v === "object" && "t" in v) shown = fmtT(v.t);
@@ -246,7 +261,7 @@ function itemView(it) {
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${!t.extra && typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${typeof r[0] === "number" ? `<span class="lvb">${r[0]}</span>` : esc(r[0] ?? "")}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <tbody>${t.rows.map(r => `<tr${!t.extra && typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>
