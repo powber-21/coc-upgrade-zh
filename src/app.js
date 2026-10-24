@@ -285,7 +285,7 @@ function searchView(q) {
 }
 
 function faqView() {
-  $("#crumbs").innerHTML = "";  // 這頁不顯示路徑，改成右上角的連結亮起來
+  crumbs([]);  // 路徑只顯示「數據首頁」，目前這頁由右上角亮起來的連結表示
   const qa = [
     ["這個網站是做什麼的？", "查詢部落衝突（Clash of Clans）所有兵種、建築、法術、英雄、裝備與戰寵的升級費用、升級時間和屬性。"],
     ["為什麼做這個網站？", "想查資料又不想每次都翻 wiki，所以自己做了一個。"],
@@ -329,7 +329,7 @@ function logLines(ch) {
 }
 const fmtDay = d => { const [y, m, dd] = d.split("-"); return `${y} 年 ${+m} 月 ${+dd} 日`; };
 function updatesView() {
-  $("#crumbs").innerHTML = "";  // 這頁不顯示路徑，改成右上角的連結亮起來
+  crumbs([]);  // 路徑只顯示「數據首頁」，目前這頁由右上角亮起來的連結表示
   const log = DATA.log || [];
   return `<div class="intro"><h1>版本更新</h1><p>資料來源每次更新時，自動比對出新增的項目和改變的數值。數值依照目前的中文名稱顯示。</p></div>
     <div class="log">${log.map(day => {
