@@ -104,6 +104,14 @@ def zh_name(name):
     return ZH_NAMES.get(name) or name
 
 
+# 這些欄位的值是兵種、法術、裝備等的英文名稱（例如法術工廠的「解鎖法術」），要換成中文名稱
+NAME_KEYS = ("unlocksSpell", "requiredSpellFactory", "unitName", "specialAbility")
+
+
+def is_name_key(k):
+    return k.startswith("unlocked") or k.endswith("Unlocked") or k in NAME_KEYS
+
+
 def secs(t):
     return t.get("days", 0) * 86400 + t.get("hours", 0) * 3600 + t.get("minutes", 0) * 60 + t.get("seconds", 0)
 
@@ -127,7 +135,11 @@ def flatten(obj, prefix="", multi=False):
         elif isinstance(v, dict):
             out += flatten(v, path + ".")
         elif isinstance(v, list):
+            if is_name_key(k):
+                v = [zh_name(x) if isinstance(x, str) else x for x in v]
             out.append((path, "、".join(str(x) if not isinstance(x, dict) else json.dumps(x, ensure_ascii=False) for x in v)))
+        elif is_name_key(k) and isinstance(v, str):
+            out.append((path, zh_name(v)))
         else:
             out.append((path, v))
     return out
@@ -195,6 +207,8 @@ def attrs(d):
                 out.append([p, x])
         elif isinstance(v, list):
             out.append([k, [x if not isinstance(x, dict) else json.dumps(x, ensure_ascii=False) for x in v]])
+        elif is_name_key(k) and isinstance(v, str):
+            out.append([k, zh_name(v)])
         else:
             out.append([k, v])
     return out
