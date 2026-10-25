@@ -98,6 +98,17 @@ main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: min
 .vcard .vt { padding: 10px 14px 12px; border-top: 2px solid var(--line); }
 .vcard h2 { margin: 0; font-size: 20px; font-weight: 900; }
 .vcard p { margin: 2px 0 0; color: var(--muted); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 滑鼠移到首頁的大卡片：金色外框（跟小方塊一樣）、卡片微微浮起、圖片稍微放大 */
+.vcard img { transition: transform .25s ease; }
+.vcard { transition: transform .15s ease, border-color .15s ease; }
+@media (hover: hover) {
+  .vcard:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .vcard:hover img { transform: scale(1.04); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vcard, .vcard img { transition: none; }
+  .vcard:hover, .vcard:hover img { transform: none; }
+}
 .passbar { display: grid; gap: 8px; }
 .passbar .lbl { font-size: 13px; font-weight: 700; color: var(--muted); }
 .seg4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 5px; background: var(--pill); border-radius: 14px; max-width: 480px; }
@@ -128,6 +139,17 @@ h2.group { margin: 0 0 12px; font-size: 20px; color: var(--ink); font-weight: 90
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
 a.tile { display: grid; justify-items: center; align-content: start; gap: 6px; padding: 12px 6px 10px; border-radius: 14px; text-decoration: none; color: var(--ink); text-align: center; }
 a.tile:hover { border-color: var(--gold); }
+/* 滑鼠移到小方塊：跟首頁大卡片一樣微微浮起、圖片稍微放大 */
+a.tile { transition: transform .15s ease, border-color .15s ease; }
+a.tile img { transition: transform .25s ease; }
+@media (hover: hover) {
+  a.tile:hover { transform: translateY(-3px); }
+  a.tile:hover img { transform: scale(1.08); }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.tile, a.tile img { transition: none; }
+  a.tile:hover, a.tile:hover img { transform: none; }
+}
 .tile img, .tile .noimg { width: 72px; height: 72px; object-fit: contain; }
 .noimg { display: grid; place-items: center; border-radius: 10px; background: var(--sunk); color: var(--muted); font-family: var(--font-display); font-size: 22px; }
 .tile .n { font-size: 14px; font-weight: 700; line-height: 1.25; }
@@ -142,6 +164,12 @@ a.tile:hover { border-color: var(--gold); }
 .seg { display: inline-flex; gap: 4px; padding: 4px; background: var(--pill); border-radius: 12px; justify-self: start; }
 .seg button { border: 0; background: transparent; height: 40px; padding: 0 18px; border-radius: 9px; font-weight: 700; color: var(--muted); }
 .seg button[aria-pressed="true"] { background: var(--gold); color: #1c2128; font-weight: 900; box-shadow: 0 3px 0 var(--gold-ledge); }
+/* 依大本營等級：滑鼠移到沒選中的村莊、等級上時變淡灰色，跟月卡折扣一樣 */
+@media (hover: hover) {
+  .seg button, .chip { cursor: pointer; }
+  .seg button:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
+  .chip:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--ink) 8%, var(--surface)); }
+}
 .note { color: var(--muted); font-size: 13px; margin: 0; }
 
 /* 項目頁 */
