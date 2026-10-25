@@ -425,6 +425,8 @@ function doSearch() {
   render(); q.blur(); window.scrollTo(0, 0);
 }
 $("#qbtn").addEventListener("click", doSearch);
+// iPhone 的 Safari 要有 touchstart 監聽，按下去的 :active 效果才會出現
+document.addEventListener("touchstart", () => {}, { passive: true });
 $("#q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); doSearch(); } });
 // 版本更新、常見問題頁：右上角對應的連結亮起來，讓使用者知道自己在哪一頁
 document.querySelectorAll(".toplinks a").forEach(a => { if (PAGE_ITEM && a.getAttribute("href").endsWith(PAGE_ITEM + "/")) a.setAttribute("aria-current", "page"); });

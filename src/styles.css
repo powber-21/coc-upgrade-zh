@@ -38,7 +38,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; -webkit-tap-highlight-color: transparent; }  /* 關掉手機瀏覽器自帶的點擊色塊，改用下面各按鈕自己的按下效果 */
 body { margin: 0; }
 img { max-width: 100%; }
 [hidden] { display: none !important; }
@@ -81,6 +81,8 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 @keyframes link-hop-back { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(3px); } 70% { transform: translateY(-.5px); } }
 /* 底線不算連結的一部分：滑鼠移到底線上不會觸發跳動 */
 .toplinks a::after, .crumbs a::after { pointer-events: none; }
+/* 加大手指可以點的範圍（上下各多 9px，用負的 margin 抵銷），字的位置和大小不變 */
+.toplinks a, .crumbs a.home, .crumbs a { padding-block: 11px; margin-block: -9px; }
 @media (hover: hover) {
   .brand:hover, .toplinks a:hover, .crumbs a:hover { animation: link-hop .45s ease; }
   .toplinks a:hover::after, .crumbs a:hover::after { animation: link-hop-back .45s ease; }
@@ -89,17 +91,17 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
   .brand:hover, .toplinks a:hover, .crumbs a:hover, .toplinks a:hover::after, .crumbs a:hover::after { animation: none; }
 }
 .toplinks a[aria-current="page"] { color: #fff; }
-.toplinks a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
+.toplinks a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: 2px; height: 3px; border-radius: 2px; background: var(--gold); }
 .toplinks .dot { width: 8px; height: 8px; border-radius: 50%; background: #e5484d; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 700; color: #fff; min-height: 26px; }
-.crumbs a { color: #fff; text-decoration: none; padding-block: 2px; }
+.crumbs a { color: #fff; text-decoration: none; }
 .crumbs a:not(.home):hover { text-decoration: underline; text-underline-offset: 4px; }
 .crumbs .sep { color: #6f7c8e; }
 /* 「首頁」：字比網站名稱小、比後面的路徑大，顏色跟「版本更新」「常見問題」一樣 */
 .crumbs a.home { font-size: 20px; font-weight: 900; line-height: 1.15; color: #c9d2de; }
 .crumbs a.home:hover, .crumbs a.home[aria-current] { color: #fff; }
 .crumbs a.home[aria-current] { position: relative; }
-.crumbs a.home[aria-current]::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: -5px; height: 3px; border-radius: 2px; background: var(--gold); }
+.crumbs a.home[aria-current]::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: 4px; height: 3px; border-radius: 2px; background: var(--gold); }
 
 main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
 
@@ -361,3 +363,9 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 }
 /* 按下去時一律往下壓（要放在滑鼠浮起的效果後面，才不會被蓋掉） */
 .vcard:active, a.tile:active, .links a:active { transform: translateY(2px); }
+/* 手機、平板按下去的反應：手指按住時就有變化，不用等頁面切換 */
+.subtabs a:not([aria-current="page"]):active::before { content: ""; position: absolute; inset: 6px 8px; z-index: -1; border-radius: 8px; background: rgba(255, 255, 255, .14); }
+.seg4 button:not([aria-pressed="true"]):active, .seg button:not([aria-pressed="true"]):active { background: color-mix(in srgb, var(--ink) 14%, transparent); }
+.chip:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ledge); }
+.log .day > summary:active { background: color-mix(in srgb, var(--ink) 10%, var(--surface)); }
+.brand:active, .toplinks a:active, .crumbs a:active, a.nm:active, .faq a:active, footer a:active { opacity: .6; }
