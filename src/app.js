@@ -193,10 +193,10 @@ function villageView(v, tab) {
   const cfg = VILLAGES[v];
   const cur = cfg.tabs.find(t => t[0] === tab) || cfg.tabs.find(t => t[0] === state.sub[v]) || cfg.tabs.find(t => t[0] === "tech") || cfg.tabs[0];
   state.sub[v] = cur[0]; save();
-  crumbs([[cfg.zh]]);
+  crumbs([[cfg.zh, v], [cur[1]]]);
   const sections = cur[2]().filter(s => s.items.length);
   return `<nav class="subtabs band" aria-label="${cfg.zh}分類">${cfg.tabs.map(([k, t]) => `<a href="${BASE}#${v}.${k}" aria-current="${k === cur[0] ? "page" : "false"}">${t}</a>`).join("")}</nav>
-    ${sections.map(s => `<section><h2 class="group">${esc(s.title)}<span>${s.items.length}</span></h2><div class="grid">${s.items.map(it => tile(it)).join("")}</div></section>`).join("")}`;
+    ${sections.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => tile(it)).join("")}</div></section>`).join("")}`;
 }
 
 function hallView() {
@@ -293,7 +293,7 @@ function searchView(q) {
   if (!hits.length) return `<div class="empty">找不到「${esc(q)}」。試試看英文名稱，或換個關鍵字。</div>`;
   const by = {};
   for (const it of hits) { const v = (HOME_OF[it.id] || {}).v || "other"; (by[v] ||= []).push(it); }
-  return Object.entries(by).map(([v, list]) => `<section><h2 class="group">${VILLAGES[v] ? VILLAGES[v].zh : "其他"}<span>${list.length}</span></h2><div class="grid">${list.map(it => tile(it)).join("")}</div></section>`).join("");
+  return Object.entries(by).map(([v, list]) => `<section><h2 class="group">${VILLAGES[v] ? VILLAGES[v].zh : "其他"}</h2><div class="grid">${list.map(it => tile(it)).join("")}</div></section>`).join("");
 }
 
 function faqView() {
