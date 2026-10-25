@@ -170,14 +170,15 @@ let state = { sub: {}, hall: 0, hallBase: "home", my: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
-// home：目前就在首頁，像「版本更新」「常見問題」一樣標示出來
-function crumbs(parts, home = false) {
-  $("#crumbs").innerHTML = [`<a class="home" href="${BASE}./"${home ? ' aria-current="page"' : ""}>首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
+// 「首頁」：在首頁和它底下的頁面都亮起來（白字加金色底線），只有版本更新、常見問題頁不亮
+function crumbs(parts) {
+  const on = PAGE_ITEM !== "updates" && PAGE_ITEM !== "faq";
+  $("#crumbs").innerHTML = [`<a class="home" href="${BASE}./"${on ? ` aria-current="${parts.length ? "true" : "page"}"` : ""}>首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
 
 function landingView() {
-  crumbs([], true);
+  crumbs([]);
   const card = (v, title, tag, big) => `<a class="vcard${big ? " big" : ""}" href="${BASE}#${v}">
     <img src="${BASE}card-${v}.webp" alt="" width="800" height="396"><div class="vt"><h2>${title}</h2><p>${tag}</p></div></a>`;
   const V = VILLAGES;
@@ -271,7 +272,7 @@ function itemView(it) {
     ${hm && used.length ? "<hr>" : ""}
     ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
   const tables = it.tables.map(t => `<section class="tbl">
-    <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
+    <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
     <tbody>${t.rows.map(r => `<tr${!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
@@ -282,7 +283,6 @@ function itemView(it) {
     ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))} ›</a>`).join("")}</div>` : ""}
     ${attrHtml}
     ${panel}
-    ${discount && used.length ? `<p class="disc" style="margin:0">已套用月卡 -${discount}%</p>` : ""}
     ${tables}`;
 }
 

@@ -70,7 +70,7 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 .toplinks a { display: inline-flex; align-items: center; gap: 5px; color: #c9d2de; text-decoration: none; padding: 2px 8px; border-radius: 8px; position: relative; }
 .toplinks a { white-space: nowrap; }
 .toplinks a:hover { color: #fff; }
-.toplinks a[aria-current="page"] { color: #fff; background: rgba(255, 255, 255, .12); }
+.toplinks a[aria-current="page"] { color: #fff; }
 .toplinks a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
 .toplinks .dot { width: 8px; height: 8px; border-radius: 50%; background: #e5484d; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 700; color: #fff; min-height: 26px; }
@@ -78,9 +78,9 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 .crumbs .sep { color: #6f7c8e; }
 /* 「首頁」：字比網站名稱小、比後面的路徑大，顏色跟「版本更新」「常見問題」一樣 */
 .crumbs a.home { font-size: 20px; font-weight: 900; line-height: 1.15; color: #c9d2de; }
-.crumbs a.home:hover, .crumbs a.home[aria-current="page"] { color: #fff; }
-.crumbs a[aria-current="page"] { background: rgba(255, 255, 255, .12); padding: 2px 8px; margin-left: -8px; border-radius: 8px; position: relative; }
-.crumbs a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
+.crumbs a.home:hover, .crumbs a.home[aria-current] { color: #fff; }
+.crumbs a.home[aria-current] { position: relative; }
+.crumbs a.home[aria-current]::after { content: ""; position: absolute; left: -2px; right: -2px; bottom: -5px; height: 3px; border-radius: 2px; background: var(--gold); }
 
 main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
 
@@ -180,6 +180,8 @@ dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 500; font-size: 
 
 section.tbl h3 { margin: 0 0 4px; font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
 section.tbl h3 .ti { width: 36px; height: 36px; object-fit: contain; }
+/* 表格標題右邊的「（已套用月卡 -20%）」：比標題小，跟標題隔開一點 */
+section.tbl h3 .dnote { margin-left: 2px; font-size: 15px; font-weight: 700; }
 section.tbl .sub { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
 .scroll { overflow-x: auto; border: 2px solid var(--line); border-radius: 16px; background: var(--surface); -webkit-overflow-scrolling: touch; }
 table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; font-size: 14px; min-width: 100%; }
