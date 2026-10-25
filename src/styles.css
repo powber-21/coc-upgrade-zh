@@ -16,6 +16,7 @@
   --gold: #f5b70a;
   --gold-ledge: #b98000;
   --accent: #8a5a00;
+  --link: #0969da;
   --r-gold: #8a5a00;
   --r-elixir: #7a2a8c;
   --r-dark: #4a3a5c;
@@ -26,14 +27,14 @@
   :root:not([data-theme="light"]) {
     --bg: #12161c; --surface: #1b212b; --sunk: #171c24; --pill: #252d39; --ink: #e8ecf1; --muted: #9aa4b2;
     --line: #2b3340; --line-soft: #252c37; --ledge: #0b0f14; --night: #0d131b; --night-2: #1f2a38; --night-ledge: #05080c;
-    --accent: #f5b70a; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
+    --accent: #f5b70a; --link: #4493f8; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #12161c; --surface: #1b212b; --sunk: #171c24; --pill: #252d39; --ink: #e8ecf1; --muted: #9aa4b2;
   --line: #2b3340; --line-soft: #252c37; --ledge: #0b0f14; --night: #0d131b; --night-2: #1f2a38; --night-ledge: #05080c;
-  --accent: #f5b70a; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
+  --accent: #f5b70a; --link: #4493f8; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -282,7 +283,8 @@ tbody tr:last-child td { border-bottom: 0; }
 .faq section { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 14px 16px; }
 .faq h2 { margin: 0 0 6px; font-size: 17px; font-weight: 900; }
 .faq p { margin: 0; color: var(--muted); line-height: 1.7; }
-.faq a { color: var(--accent); font-weight: 700; overflow-wrap: anywhere; }
+.faq a { color: var(--link); font-weight: 700; overflow-wrap: anywhere; }
+.faq a:hover { text-decoration: none; }
 /* 解鎖兵種／法術／裝備：點名稱到該項目的頁面 */
 a.nm { color: inherit; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
 a.nm:hover { text-decoration-color: currentColor; }
@@ -314,6 +316,7 @@ footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; padding-
 .log li .ri { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
 footer p { margin: 0; max-width: 80ch; }
 footer a { color: inherit; }
+footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，滑鼠移上去變藍色 */
 
 @media (max-width: 720px) {
   .vcards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
