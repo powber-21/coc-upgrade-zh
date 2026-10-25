@@ -73,17 +73,19 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 .toplinks a { display: inline-flex; align-items: center; gap: 5px; color: #c9d2de; text-decoration: none; padding: 2px 8px; border-radius: 8px; position: relative; }
 .toplinks a { white-space: nowrap; }
 .toplinks a:hover { color: #fff; }
-/* 頁首的文字連結（網站名稱、版本更新、常見問題、路徑）：滑鼠移上去往上浮一點，原本的變色、底線效果照舊 */
-.brand, .toplinks a, .crumbs a { transition: transform .2s ease, color .15s ease; }
+/* 頁首的文字連結（網站名稱、版本更新、常見問題、路徑）：滑鼠移上去跳一下再落回原位，原本的變色、底線效果照舊 */
+.brand, .toplinks a, .crumbs a { transition: color .15s ease; }
+@keyframes link-hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-3px); } 70% { transform: translateY(.5px); } }
+/* 金色底線做相反的動作，抵銷文字的跳動，看起來就留在原地 */
+@keyframes link-hop-back { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(3px); } 70% { transform: translateY(-.5px); } }
+/* 底線不算連結的一部分：滑鼠移到底線上不會觸發跳動 */
+.toplinks a::after, .crumbs a::after { pointer-events: none; }
 @media (hover: hover) {
-  .brand:hover, .toplinks a:hover, .crumbs a:hover { transform: translateY(-2px); }
-  /* 金色底線往反方向移，抵銷文字的上浮，看起來就留在原地 */
-  .toplinks a:hover::after, .crumbs a:hover::after { transform: translateY(2px); }
+  .brand:hover, .toplinks a:hover, .crumbs a:hover { animation: link-hop .45s ease; }
+  .toplinks a:hover::after, .crumbs a:hover::after { animation: link-hop-back .45s ease; }
 }
-.toplinks a::after, .crumbs a::after { transition: transform .2s ease; }
 @media (prefers-reduced-motion: reduce) {
-  .brand:hover, .toplinks a:hover, .crumbs a:hover { transform: none; }
-  .toplinks a:hover::after, .crumbs a:hover::after { transform: none; }
+  .brand:hover, .toplinks a:hover, .crumbs a:hover, .toplinks a:hover::after, .crumbs a:hover::after { animation: none; }
 }
 .toplinks a[aria-current="page"] { color: #fff; }
 .toplinks a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
