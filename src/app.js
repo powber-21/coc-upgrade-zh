@@ -170,9 +170,9 @@ let state = { sub: {}, hall: 0, hallBase: "home", my: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
-// home：目前就在數據首頁，像「版本更新」「常見問題」一樣標示出來
+// home：目前就在首頁，像「版本更新」「常見問題」一樣標示出來
 function crumbs(parts, home = false) {
-  $("#crumbs").innerHTML = [`<a href="${BASE}./"${home ? ' aria-current="page"' : ""}>數據首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
+  $("#crumbs").innerHTML = [`<a class="home" href="${BASE}./"${home ? ' aria-current="page"' : ""}>首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
 
@@ -297,7 +297,7 @@ function searchView(q) {
 }
 
 function faqView() {
-  crumbs([]);  // 路徑只顯示「數據首頁」，目前這頁由右上角亮起來的連結表示
+  crumbs([]);  // 路徑只顯示「首頁」，目前這頁由右上角亮起來的連結表示
   const qa = [
     ["這個網站是做什麼的？", "查詢部落衝突（Clash of Clans）所有兵種、建築、法術、英雄、裝備與戰寵的升級費用、升級時間和屬性。"],
     ["資料從哪裡來？", `數據來自開源專案 <a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>（MIT 授權，© 2026 Christopher Pezza）。本站只負責整理成中文和方便查詢，數字和原始資料一致。遊戲剛改版時，資料可能要過幾天才會更新。`],
@@ -340,7 +340,7 @@ function logLines(ch) {
 }
 const fmtDay = d => { const [y, m, dd] = d.split("-"); return `${y} 年 ${+m} 月 ${+dd} 日`; };
 function updatesView() {
-  crumbs([]);  // 路徑只顯示「數據首頁」，目前這頁由右上角亮起來的連結表示
+  crumbs([]);  // 路徑只顯示「首頁」，目前這頁由右上角亮起來的連結表示
   const log = DATA.log || [];
   return `<div class="intro"><h1>版本更新</h1><p>資料來源每次更新時，自動比對出新增的項目和改變的數值。數值依照目前的中文名稱顯示。</p></div>
     <div class="log">${log.map(day => {

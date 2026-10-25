@@ -75,6 +75,9 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 700; color: #fff; min-height: 26px; }
 .crumbs a { color: var(--gold); text-decoration: none; padding-block: 2px; }
 .crumbs .sep { color: #6f7c8e; }
+/* 「首頁」：字比網站名稱大一點，顏色跟「版本更新」「常見問題」一樣 */
+.crumbs a.home { font-size: 23px; font-weight: 900; line-height: 1.15; color: #c9d2de; }
+.crumbs a.home:hover, .crumbs a.home[aria-current="page"] { color: #fff; }
 .crumbs a[aria-current="page"] { background: rgba(255, 255, 255, .12); padding: 2px 8px; margin-left: -8px; border-radius: 8px; position: relative; }
 .crumbs a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
 
@@ -100,6 +103,11 @@ main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: min
 .seg4 button:first-child { font-family: var(--font-body); font-size: 15px; font-weight: 700; }
 .seg4 button[aria-pressed="true"] { background: var(--gold); color: #1c2128; box-shadow: 0 3px 0 var(--gold-ledge); }
 .seg4 button:first-child[aria-pressed="true"] { font-weight: 900; }
+/* 滑鼠移到沒選中的折扣上：出現淡色框，跟分類列一樣 */
+@media (hover: hover) {
+  .seg4 button { cursor: pointer; }
+  .seg4 button:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
+}
 
 /* 分類頁的分頁：接在頂部下面的深色色帶 */
 .subtabs { display: flex; margin-top: -16px; padding-top: 4px; overflow-x: auto; scrollbar-width: none; }
