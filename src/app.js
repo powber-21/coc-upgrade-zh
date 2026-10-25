@@ -54,8 +54,18 @@ const off = x => discount ? x * (100 - discount) / 100 : x;
 const wan = n => n >= 1e4 ? (n >= 1e7 ? Math.round(n / 1e4).toLocaleString("en-US") : String(+(n / 1e4).toFixed(2))) + "萬" : n.toLocaleString("en-US");
 const resClass = r => "c-" + (r || "").split(" or ")[0].toLowerCase().replace(/ /g, "-");
 
-function cell(v, col) {
+// 解鎖兵種／法術／裝備這類欄位的值是項目名稱（build.py 的 is_name_key），找得到項目就連到它的頁面
+const isNameCol = c => { const k = (c || "").split(".").pop(); return /^unlocked|Unlocked$/.test(k) || ["unlocksSpell", "requiredSpellFactory", "unitName", "specialAbility"].includes(k); };
+function nameLinks(v, base) {
+  return v.split("、").map(n => {
+    const all = Object.values(DATA.items), u = all.find(i => i.zh === n && i.base === base) || all.find(i => i.zh === n);
+    return u ? `<a class="nm" href="${itemHref(u.id)}">${img(u, "ni")}${esc(nameOf(u))}</a>` : esc(n);
+  }).join("、");
+}
+
+function cell(v, col, base) {
   if (v === null || v === undefined) return "";
+  if (typeof v === "string" && base && isNameCol(col)) return nameLinks(v, base);
   if (typeof v === "object" && "t" in v) return `<span class="${discount && v.t ? "disc" : ""}">${fmtT(off(v.t))}</span>`;
   if (typeof v === "object" && "c" in v) {
     const c = typeof v.c === "number" ? Math.round(off(v.c)) : v.c;
@@ -160,13 +170,14 @@ let state = { sub: {}, hall: 0, hallBase: "home", my: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
-function crumbs(parts) {
-  $("#crumbs").innerHTML = [`<a href="${BASE}./">數據首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
+// home：目前就在數據首頁，像「版本更新」「常見問題」一樣標示出來
+function crumbs(parts, home = false) {
+  $("#crumbs").innerHTML = [`<a href="${BASE}./"${home ? ' aria-current="page"' : ""}>數據首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
 
 function landingView() {
-  crumbs([]);
+  crumbs([], true);
   const card = (v, title, tag, big) => `<a class="vcard${big ? " big" : ""}" href="${BASE}#${v}">
     <img src="${BASE}card-${v}.webp" alt="" width="800" height="396"><div class="vt"><h2>${title}</h2><p>${tag}</p></div></a>`;
   const V = VILLAGES;
@@ -236,6 +247,7 @@ function itemView(it) {
     if (v && typeof v === "object" && "t" in v) shown = fmtT(v.t);
     else if (v && typeof v === "object" && "c" in v) return `<div><dt>${esc(label(k))}</dt><dd>${cell(v)}</dd></div>`;
     else if (k === "hero") shown = nameOf(DATA.items["home-" + v] || { en: v });
+    else if (typeof v === "string" && isNameCol(k)) return `<div><dt>${esc(label(k))}</dt><dd>${nameLinks(v, it.base)}</dd></div>`;
     else shown = fmtN(value(v));
     return `<div><dt>${esc(label(k))}</dt><dd>${esc(shown)}</dd></div>`;
   }).join("")}</dl>` : "";
@@ -261,7 +273,7 @@ function itemView(it) {
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <tbody>${t.rows.map(r => `<tr${!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>

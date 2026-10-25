@@ -75,6 +75,8 @@ header .wrap { display: grid; gap: 10px; padding-block: 12px 10px; }
 .crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 15px; font-weight: 700; color: #fff; min-height: 26px; }
 .crumbs a { color: var(--gold); text-decoration: none; padding-block: 2px; }
 .crumbs .sep { color: #6f7c8e; }
+.crumbs a[aria-current="page"] { color: #fff; background: rgba(255, 255, 255, .12); padding: 2px 8px; margin-left: -8px; border-radius: 8px; position: relative; }
+.crumbs a[aria-current="page"]::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -7px; height: 3px; border-radius: 2px; background: var(--gold); }
 
 main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px; }
 
@@ -201,6 +203,11 @@ tbody tr:last-child td { border-bottom: 0; }
 .faq h2 { margin: 0 0 6px; font-size: 17px; font-weight: 900; }
 .faq p { margin: 0; color: var(--muted); line-height: 1.7; }
 .faq a { color: var(--accent); font-weight: 700; overflow-wrap: anywhere; }
+/* 解鎖兵種／法術／裝備：點名稱到該項目的頁面 */
+a.nm { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 700; text-decoration: none; }
+a.nm:hover { text-decoration: underline; }
+a.nm .ni { width: 24px; height: 24px; object-fit: contain; flex-shrink: 0; }
+a.nm .noimg.ni { display: inline-grid; place-items: center; font-size: 12px; border-radius: 6px; }
 footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; padding-top: 14px; border-top: 2px dashed var(--line); }
 .log { display: grid; gap: 14px; max-width: 760px; }
 .log .day { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 0 16px; }
