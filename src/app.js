@@ -59,7 +59,7 @@ const isNameCol = c => { const k = (c || "").split(".").pop(); return /^unlocked
 function nameLinks(v, base) {
   return v.split("、").map(n => {
     const all = Object.values(DATA.items), u = all.find(i => i.zh === n && i.base === base) || all.find(i => i.zh === n);
-    return u ? `<a class="nm" href="${itemHref(u.id)}">${img(u, "ni")}${esc(nameOf(u))}</a>` : esc(n);
+    return u ? `<a class="nm" href="${itemHref(u.id)}">${esc(nameOf(u))}</a>` : esc(n);
   }).join("、");
 }
 
