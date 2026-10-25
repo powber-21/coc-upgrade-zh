@@ -193,7 +193,7 @@ function villageView(v, tab) {
   const cfg = VILLAGES[v];
   const cur = cfg.tabs.find(t => t[0] === tab) || cfg.tabs.find(t => t[0] === state.sub[v]) || cfg.tabs.find(t => t[0] === "tech") || cfg.tabs[0];
   state.sub[v] = cur[0]; save();
-  crumbs([[cfg.zh, v], [cur[1]]]);
+  crumbs([[cfg.zh]]);
   const sections = cur[2]().filter(s => s.items.length);
   return `<nav class="subtabs band" aria-label="${cfg.zh}分類">${cfg.tabs.map(([k, t]) => `<a href="${BASE}#${v}.${k}" aria-current="${k === cur[0] ? "page" : "false"}">${t}</a>`).join("")}</nav>
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => tile(it)).join("")}</div></section>`).join("")}`;
@@ -228,8 +228,8 @@ function hallView() {
 function itemView(it) {
   const where = HOME_OF[it.id];
   const cfg = where && VILLAGES[where.v];
-  const tabName = cfg ? cfg.tabs.find(t => t[0] === where.t)[1] : "";
-  crumbs(cfg ? [[cfg.zh, where.v], [tabName, `${where.v}.${where.t}`], [nameOf(it)]] : [[nameOf(it)]]);
+  // 路徑不列分頁：點「家鄉村莊」回到這個項目所在的分頁
+  crumbs(cfg ? [[cfg.zh, `${where.v}.${where.t}`], [nameOf(it)]] : [[nameOf(it)]]);
   // 捷徑連結：兵種和超級部隊互相連結，英雄頁列出自己的裝備，裝備頁連回所屬英雄
   const gear = it.group === "home/heroes" ? G("home/hero-equipment").filter(e => owner(e) === it.id) : [];
   const hero = it.group === "home/hero-equipment" ? DATA.items[owner(it)] : null;
