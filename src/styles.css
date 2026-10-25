@@ -111,7 +111,7 @@ main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: min
 
 /* 首頁 */
 .intro h1 { margin: 0 0 6px; font-size: 30px; font-weight: 900; line-height: 1.15; }
-.intro p { margin: 0; color: var(--muted); max-width: 65ch; }
+.intro p { margin: 0; color: var(--muted); }
 .vcards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .vcard { display: flex; flex-direction: column; border-radius: 18px; overflow: hidden; color: var(--ink); text-decoration: none; box-shadow: 0 4px 0 var(--ledge); }
 .vcard img { display: block; width: 100%; height: auto; aspect-ratio: 800 / 396; object-fit: cover; }
@@ -325,7 +325,7 @@ footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; padding-
 .log ul { margin: 0 0 8px; padding-left: 20px; line-height: 1.7; overflow-wrap: anywhere; }
 .log .lvl { display: block; color: var(--muted); }
 .log li .ri { width: 14px; height: 14px; vertical-align: -2px; margin-left: 2px; }
-footer p { margin: 0; max-width: 80ch; }
+footer p { margin: 0; }
 footer a { color: inherit; }
 footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，滑鼠移上去變藍色 */
 
