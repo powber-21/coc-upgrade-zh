@@ -228,6 +228,7 @@ dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 500; font-size: 
 .panel { border-radius: 16px; padding: 14px; display: grid; gap: 12px; max-width: 560px; }
 .panel .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .panel .lbl { font-size: 14px; font-weight: 900; }
+.panel .row .lbl { font-size: 16px; }  /* 「我的大本營」「我的英雄等級」標題 */
 .panel hr { border: 0; height: 1px; background: var(--line-soft); margin: 0; }
 .panel .say { font-size: 14px; color: var(--muted); }
 .panel .say b { color: var(--ink); }
