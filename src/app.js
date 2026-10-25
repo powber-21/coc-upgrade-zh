@@ -166,7 +166,7 @@ for (const [v, cfg] of Object.entries(VILLAGES))
   for (const [t, , fn] of cfg.tabs)
     for (const s of fn()) for (const it of s.items) HOME_OF[it.id] ||= { v, t, sec: s.title };
 
-let state = { sub: {}, hall: 0, hallBase: "home", my: {} };
+let state = { sub: {}, hall: 0, hallBase: "home", my: {}, lv: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
@@ -271,6 +271,7 @@ function itemView(it) {
       <div class="say">${hallName} <b>${my}</b> ${myMax ? `可升到 <b class="hl">Lv ${myMax}</b>，表中淡色的等級需要更高的${hallName}。` : "還不能使用。"}</div>` : ""}
     ${hm && used.length ? "<hr>" : ""}
     ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
+  const calc = calcPanel(it, top, myMax, hm ? `${hallName} ${my}` : "");
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
@@ -282,8 +283,28 @@ function itemView(it) {
     ${it.desc ? `<p class="desc">${esc(it.desc)}</p>` : ""}
     ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))} ›</a>`).join("")}</div>` : ""}
     ${attrHtml}
-    ${panel}
+    ${calc ? `<div class="panels">${panel}${calc}</div>` : panel}
     ${tables}`;
+}
+
+// 英雄升級時間：輸入目前等級，算出升到最高等級（大本營能升到的等級）所需的時間，套用月卡折扣
+function calcPanel(it, top, myMax, hallText) {
+  if (!it.group.endsWith("/heroes")) return "";
+  const t = it.tables.find(x => !x.extra), ti = t ? t.cols.findIndex(c => /Time$/.test(c)) + 1 : 0;
+  if (!ti) return "";
+  const low = t.rows.find(r => typeof r[0] === "number")[0];
+  const cur = Math.max(low, Math.min(top, state.lv[it.id] ?? low));
+  return `<div class="panel calc" data-calc="${it.id}" data-lo="${low}" data-hi="${top}" data-goal="${Math.min(top, myMax)}" data-hall="${esc(hallText)}">
+    <div class="row"><label class="lbl" for="mylv">我的英雄等級</label>
+      <input class="n lvin" id="mylv" type="number" inputmode="numeric" min="${low}" max="${top}" value="${cur}" data-lvin></div>
+    <div class="out">${calcOut(it, t, ti, cur, Math.min(top, myMax), hallText)}</div></div>`;
+}
+function calcOut(it, t, ti, cur, goal, hallText) {
+  if (!goal) return `<div class="say">${hallText}還不能使用。</div>`;
+  if (cur >= goal) return `<div class="say">已經是${hallText ? `${hallText} 能升到的` : ""}最高等級 <b class="hl">Lv ${goal}</b>，不用再升級。</div>`;
+  const time = t.rows.reduce((a, r) => typeof r[0] === "number" && r[0] > cur && r[0] <= goal && r[ti] ? a + off(r[ti].t) : a, 0);
+  return `<div class="say">從 Lv ${cur} 升到 <b class="hl">Lv ${goal}</b>${hallText ? `（${hallText} 的上限）` : ""}所需時間：</div>
+    <div class="sum">⏱ ${fmtT(time)}</div>${discount ? `<div class="say">已套用月卡 -${discount}%。</div>` : ""}`;
 }
 
 function searchView(q) {
@@ -415,6 +436,23 @@ $("#view").addEventListener("click", e => {
 $("#view").addEventListener("change", e => {
   const s = e.target.closest("[data-myset]");
   if (s) { state.my[s.dataset.b] = +s.value; save(); render(); }
+});
+// 輸入英雄等級：邊打字邊更新結果，只換掉結果那一塊，輸入框才不會失去焦點
+$("#view").addEventListener("input", e => {
+  const inp = e.target.closest("[data-lvin]");
+  if (!inp) return;
+  const box = inp.closest("[data-calc]"), it = DATA.items[box.dataset.calc];
+  const t = it.tables.find(x => !x.extra), ti = t.cols.findIndex(c => /Time$/.test(c)) + 1;
+  const lo = +box.dataset.lo, hi = +box.dataset.hi, n = Math.round(+inp.value);
+  if (inp.value === "" || !Number.isFinite(n)) return;
+  const cur = Math.max(lo, Math.min(hi, n));
+  state.lv[it.id] = cur; save();
+  $(".out", box).innerHTML = calcOut(it, t, ti, cur, +box.dataset.goal, box.dataset.hall);
+});
+// 離開輸入框時，把超出範圍的數字改回能用的等級
+$("#view").addEventListener("change", e => {
+  const inp = e.target.closest("[data-lvin]");
+  if (inp) inp.value = state.lv[inp.closest("[data-calc]").dataset.calc] ?? inp.min;
 });
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);
