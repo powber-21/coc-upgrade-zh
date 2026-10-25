@@ -107,6 +107,12 @@ main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: min
 .subtabs { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--head-h, 0px)); z-index: 4; }
 .subtabs a { flex: 1; min-width: 72px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--night-ink); white-space: nowrap; text-decoration: none; border-radius: 12px 12px 0 0; }
 .subtabs a[aria-current="page"] { background: var(--bg); color: var(--ink); font-weight: 900; }
+/* 滑鼠移到沒選中的分類上：像 GitHub 分頁一樣出現淡色框 */
+.subtabs a { position: relative; isolation: isolate; }
+@media (hover: hover) {
+  .subtabs a:not([aria-current="page"]):hover { color: #fff; }
+  .subtabs a:not([aria-current="page"]):hover::before { content: ""; position: absolute; inset: 6px 8px; z-index: -1; border-radius: 8px; background: rgba(255, 255, 255, .1); }
+}
 
 h2.group { margin: 0 0 12px; font-size: 20px; color: var(--ink); font-weight: 900; display: flex; align-items: center; gap: 10px; }
 h2.group span { font-family: var(--font-display); font-size: 15px; font-weight: 400; color: #fff; background: var(--night); border-radius: 8px; padding: 1px 8px 2px; line-height: 1.4; }
