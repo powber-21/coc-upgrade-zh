@@ -202,7 +202,7 @@ a.tile img { transition: transform .25s ease; }
 .hero .en { color: var(--night-ink); font-size: 14px; }
 .hero .max { margin-left: auto; display: grid; justify-items: center; gap: 2px; flex-shrink: 0; font-size: 11px; font-weight: 700; color: var(--night-ink); }
 .hero .max b { font-family: var(--font-display); font-weight: 400; font-size: 28px; line-height: 1; color: #1c2128; background: var(--gold); border-radius: 12px; padding: 6px 10px 8px; box-shadow: 0 3px 0 var(--gold-ledge); }
-.desc { margin: 0; color: var(--muted); max-width: 65ch; }
+.desc { margin: 0; color: var(--muted); }
 .links { display: flex; flex-wrap: wrap; gap: 10px; }
 .links a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 14px 4px 6px; border-radius: 999px; color: var(--ink); text-decoration: none; font-weight: 700; font-size: 14px; }
 /* 滑鼠移到捷徑按鈕（例如英雄頁的裝備）：跟小方塊一樣金色外框、微微浮起、圖片稍微放大 */

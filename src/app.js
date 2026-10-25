@@ -295,8 +295,8 @@ function calcPanel(it, top, myMax, hallText) {
   const low = t.rows.find(r => typeof r[0] === "number")[0];
   const cur = Math.max(low, Math.min(top, state.lv[it.id] ?? low));
   return `<div class="panel calc" data-calc="${it.id}" data-lo="${low}" data-hi="${top}" data-goal="${Math.min(top, myMax)}" data-hall="${esc(hallText)}">
-    <div class="row"><label class="lbl" for="mylv">我的英雄等級</label>
-      <input class="n lvin" id="mylv" type="number" inputmode="numeric" min="${low}" max="${top}" value="${cur}" data-lvin></div>
+    <div class="row"><label class="lbl" for="mylv">英雄等級</label>
+      <input class="n lvin" id="mylv" type="number" inputmode="numeric" min="${low}" max="${top}" value="${cur}" enterkeyhint="done" data-lvin></div>
     <div class="out">${calcOut(it, t, ti, cur, Math.min(top, myMax), hallText)}</div></div>`;
 }
 function calcOut(it, t, ti, cur, goal, hallText) {
@@ -449,8 +449,12 @@ $("#view").addEventListener("input", e => {
   state.lv[it.id] = cur; save();
   $(".out", box).innerHTML = calcOut(it, t, ti, cur, +box.dataset.goal, box.dataset.hall);
 });
+// 手機、平板按 Enter（完成）：收起鍵盤
+$("#view").addEventListener("keydown", e => {
+  if (e.key === "Enter" && e.target.closest("[data-lvin]")) { e.preventDefault(); e.target.blur(); }
+});
 // 離開輸入框時，把超出範圍的數字改回能用的等級
-$("#view").addEventListener("change", e => {
+$("#view").addEventListener("focusout", e => {
   const inp = e.target.closest("[data-lvin]");
   if (inp) inp.value = state.lv[inp.closest("[data-calc]").dataset.calc] ?? inp.min;
 });
