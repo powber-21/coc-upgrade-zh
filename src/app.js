@@ -418,6 +418,14 @@ $("#view").addEventListener("change", e => {
 });
 window.addEventListener("hashchange", () => { $("#q").value = ""; render(); window.scrollTo(0, 0); });
 $("#q").addEventListener("input", render);
+// 按放大鏡或 Enter：送出搜尋並收起手機鍵盤；搜尋框是空的就讓使用者開始輸入
+function doSearch() {
+  const q = $("#q");
+  if (!q.value.trim()) { q.focus(); return; }
+  render(); q.blur(); window.scrollTo(0, 0);
+}
+$("#qbtn").addEventListener("click", doSearch);
+$("#q").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); doSearch(); } });
 // 版本更新、常見問題頁：右上角對應的連結亮起來，讓使用者知道自己在哪一頁
 document.querySelectorAll(".toplinks a").forEach(a => { if (PAGE_ITEM && a.getAttribute("href").endsWith(PAGE_ITEM + "/")) a.setAttribute("aria-current", "page"); });
 // 看過版本更新頁就記下最新的日期，紅點不再出現，直到下一次資料更新
