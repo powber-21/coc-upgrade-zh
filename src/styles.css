@@ -101,6 +101,8 @@ main .wrap { padding-block: 16px 48px; display: grid; grid-template-columns: min
 
 /* 分類頁的分頁：接在頂部下面的深色色帶 */
 .subtabs { display: flex; margin-top: -16px; padding-top: 4px; overflow-x: auto; scrollbar-width: none; }
+/* 往下滑時分類列貼在頁首下方，--head-h 是頁首的高度（app.js 量的） */
+.subtabs { position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--head-h, 0px)); z-index: 4; }
 .subtabs a { flex: 1; min-width: 72px; height: 48px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; color: var(--night-ink); white-space: nowrap; text-decoration: none; border-radius: 12px 12px 0 0; }
 .subtabs a[aria-current="page"] { background: var(--bg); color: var(--ink); font-weight: 900; }
 
@@ -229,8 +231,13 @@ footer a { color: inherit; }
 }
 @media (max-width: 520px) {
   body { font-size: 16px; }
-  .top { flex-wrap: wrap; row-gap: 12px; }
-  .search { flex-basis: 100%; }
+  /* 手機：版本更新、常見問題移到最上列，跟網站名稱同一列；搜尋列和目前位置各佔一列 */
+  header .wrap { grid-template-columns: auto 1fr; grid-template-areas: "brand links" "search search" "crumbs crumbs"; row-gap: 12px; }
+  .top, .navrow { display: contents; }
+  .brand { grid-area: brand; }
+  .search { grid-area: search; }
+  .navrow .crumbs { grid-area: crumbs; }
+  .toplinks { grid-area: links; justify-self: end; }
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .grid.heroes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tile img, .tile .noimg { width: 64px; height: 64px; }

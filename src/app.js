@@ -241,7 +241,7 @@ function itemView(it) {
   }).join("")}</dl>` : "";
   const used = [...new Set(it.tables.flatMap(t => t.rows.flatMap(r => r.flatMap((v, i) =>
     v && typeof v === "object" && "c" in v ? v.r.split(" or ") : (i && ORE_COL[t.cols[i - 1]] && v ? [ORE_COL[t.cols[i - 1]]] : [])))))];
-  // 我的大本營：表中超過這個大本營能升的等級會變淡
+  // 我的大本營：表中超過這個大本營能升的等級會變淡；超級蓄能要先升到最高等級，所以跟最高等級一起變淡
   const isHall = it.id === "home-town-hall" || it.id === "builder-builder-hall";
   const hm = !isHall && (it.base === "home" || it.base === "builder") && it.hallMax ? it.hallMax : null;
   const hallName = it.base === "builder" ? "建築大師大本營" : "大本營";
@@ -261,7 +261,7 @@ function itemView(it) {
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${!t.extra && typeof r[0] === "number" && r[0] > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <tbody>${t.rows.map(r => `<tr${!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>
@@ -425,4 +425,7 @@ logDot();
 // 用返回鍵回到之前的頁面時，瀏覽器會直接顯示舊畫面，要再檢查一次
 window.addEventListener("pageshow", logDot);
 window.addEventListener("storage", logDot);
+// 頁首的高度會隨螢幕寬度改變（例如導覽列換行），分類列要貼在它下面
+const head = $("header");
+new ResizeObserver(() => document.documentElement.style.setProperty("--head-h", head.offsetHeight + "px")).observe(head);
 render();
