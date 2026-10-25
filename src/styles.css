@@ -185,6 +185,17 @@ a.tile img { transition: transform .25s ease; }
 .desc { margin: 0; color: var(--muted); max-width: 65ch; }
 .links { display: flex; flex-wrap: wrap; gap: 10px; }
 .links a { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 14px 4px 6px; border-radius: 999px; color: var(--ink); text-decoration: none; font-weight: 700; font-size: 14px; }
+/* 滑鼠移到捷徑按鈕（例如英雄頁的裝備）：跟小方塊一樣金色外框、微微浮起、圖片稍微放大 */
+.links a { transition: transform .15s ease, border-color .15s ease; }
+.links a img { transition: transform .25s ease; }
+@media (hover: hover) {
+  .links a:hover { border-color: var(--gold); transform: translateY(-3px); }
+  .links a:hover img { transform: scale(1.12); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .links a, .links a img { transition: none; }
+  .links a:hover, .links a:hover img { transform: none; }
+}
 .links img { width: 30px; height: 30px; object-fit: contain; }
 
 dl.attrs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1px; margin: 0; background: var(--line-soft); border: 2px solid var(--line); border-radius: 16px; overflow: hidden; }
@@ -204,6 +215,13 @@ dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 500; font-size: 
 .step { display: flex; align-items: center; gap: 8px; }
 .step button { width: 44px; height: 44px; border: 0; border-radius: 12px; background: var(--pill); color: var(--ink); font-size: 22px; font-weight: 900; line-height: 1; box-shadow: 0 3px 0 var(--ledge); }
 .step button:disabled { opacity: .4; cursor: default; }
+/* − / + 按鈕：按下去往下壓（手機也有）；滑鼠移上去顏色變深，等級選單出現金色外框 */
+.step button:not(:disabled):active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ledge); }
+@media (hover: hover) {
+  .step button:not(:disabled) { cursor: pointer; }
+  .step button:not(:disabled):hover { background: color-mix(in srgb, var(--ink) 14%, var(--pill)); }
+  .step .n:hover { border-color: var(--gold); }
+}
 .step .n { min-width: 64px; height: 44px; padding: 0 22px 0 10px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%235a6472' stroke-width='2'/%3E%3C/svg%3E") no-repeat right 8px center; color: var(--ink); font-family: var(--font-display); font-size: 24px; line-height: 1; text-align: center; text-align-last: center; -webkit-appearance: none; appearance: none; cursor: pointer; }
 
 section.tbl h3 { margin: 0 0 4px; font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
@@ -312,3 +330,5 @@ footer a { color: inherit; }
   .toplinks { font-size: 13px; }
   .toplinks a { padding-inline: 4px; }
 }
+/* 按下去時一律往下壓（要放在滑鼠浮起的效果後面，才不會被蓋掉） */
+.vcard:active, a.tile:active, .links a:active { transform: translateY(2px); }
