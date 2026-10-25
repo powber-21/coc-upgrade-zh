@@ -50,6 +50,12 @@ function fmtT(s) {
 const ORE_COL = { upgradeShinyOre: "Shiny Ore", upgradeGlowingOre: "Glowy Ore", upgradeStarryOre: "Starry Ore" };
 const resIcon = r => r ? r.split(" or ").map(x => DATA.res[x] ? `<img class="ri" src="${DATA.res[x]}" alt="${esc(value(x))}" title="${esc(value(x))}">` : "").join("") : "";
 const off = x => discount ? x * (100 - discount) / 100 : x;
+// 升級時間打折後（-10%、-15%、-20% 都一樣），遊戲會把零頭捨去：還有 1 天以上捨到整點，不到 1 天捨到 10 分鐘（例如 19時 12分 → 19時 10分）
+const offT = t => {
+  if (!discount || !t) return t;
+  const x = off(t), step = x >= 86400 ? 3600 : 600;
+  return x >= step ? Math.floor(x / step) * step : x;
+};
 // 費用用「萬」：25,000,000 → 2,500萬
 const wan = n => n >= 1e4 ? (n >= 1e7 ? Math.round(n / 1e4).toLocaleString("en-US") : String(+(n / 1e4).toFixed(2))) + "萬" : n.toLocaleString("en-US");
 const resClass = r => "c-" + (r || "").split(" or ")[0].toLowerCase().replace(/ /g, "-");
@@ -66,7 +72,7 @@ function nameLinks(v, base) {
 function cell(v, col, base) {
   if (v === null || v === undefined) return "";
   if (typeof v === "string" && base && isNameCol(col)) return nameLinks(v, base);
-  if (typeof v === "object" && "t" in v) return `<span class="${discount && v.t ? "disc" : ""}">${fmtT(off(v.t))}</span>`;
+  if (typeof v === "object" && "t" in v) return `<span class="${discount && v.t ? "disc" : ""}">${fmtT(offT(v.t))}</span>`;
   if (typeof v === "object" && "c" in v) {
     const c = typeof v.c === "number" ? Math.round(off(v.c)) : v.c;
     if (c === 0) return "—";
@@ -302,7 +308,7 @@ function calcPanel(it, top, myMax, hallText) {
 function calcOut(it, t, ti, cur, goal, hallText) {
   if (!goal) return `<div class="say">${hallText}還不能使用。</div>`;
   if (cur >= goal) return `<div class="say">已經是${hallText ? `${hallText} 能升到的` : ""}最高等級 <b class="hl">Lv ${goal}</b>，不用再升級。</div>`;
-  const time = t.rows.reduce((a, r) => typeof r[0] === "number" && r[0] > cur && r[0] <= goal && r[ti] ? a + off(r[ti].t) : a, 0);
+  const time = t.rows.reduce((a, r) => typeof r[0] === "number" && r[0] > cur && r[0] <= goal && r[ti] ? a + offT(r[ti].t) : a, 0);
   return `<div class="say">從 Lv ${cur} 升到 <b class="hl">Lv ${goal}</b>${hallText ? `（${hallText} 的上限）` : ""}所需時間：</div>
     <div class="sum">⏱ ${fmtT(time)}</div>${discount ? `<div class="say">已套用月卡 -${discount}%。</div>` : ""}`;
 }
