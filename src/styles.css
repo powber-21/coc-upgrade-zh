@@ -227,10 +227,9 @@ dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 500; font-size: 
 
 .panel { border-radius: 16px; padding: 14px; display: grid; gap: 12px; max-width: 560px; }
 .panel .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.panel .lbl { font-size: 14px; font-weight: 900; }
-.panel .row .lbl { font-size: 16px; }  /* 「我的大本營」「我的英雄等級」標題 */
+.panel .lbl { font-size: 20px; font-weight: 900; }  /* 「我的大本營」「我的英雄等級」「月卡折扣」標題 */
 .panel hr { border: 0; height: 1px; background: var(--line-soft); margin: 0; }
-.panel .say { font-size: 14px; color: var(--muted); }
+.panel .say { font-size: 16px; color: var(--muted); }
 .panel .say b { color: var(--ink); }
 .panel .say b.hl { color: var(--accent); }
 /* 「我的大本營」和「我的等級」兩個面板：電腦上並排，手機上下排 */
@@ -257,7 +256,7 @@ dl.attrs ul { margin: 2px 0 0; padding-left: 18px; font-weight: 500; font-size: 
 section.tbl h3 { margin: 0 0 4px; font-size: 20px; font-weight: 900; display: flex; align-items: center; gap: 8px; }
 section.tbl h3 .ti { width: 36px; height: 36px; object-fit: contain; }
 /* 表格標題右邊的「（已套用月卡 -20%）」：比標題小，跟標題隔開一點 */
-section.tbl h3 .dnote { margin-left: 2px; font-size: 15px; font-weight: 700; }
+section.tbl h3 .dnote { margin-left: 2px; font-size: 18px; font-weight: 700; }
 section.tbl .sub { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
 .scroll { overflow-x: auto; border: 2px solid var(--line); border-radius: 16px; background: var(--surface); -webkit-overflow-scrolling: touch; }
 table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; font-size: 14px; min-width: 100%; }
