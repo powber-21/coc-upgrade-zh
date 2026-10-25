@@ -347,7 +347,7 @@ function updatesView() {
       const add = day.items.filter(e => e.new).map(e => DATA.items[e.id]);
       const chg = day.items.filter(e => e.ch);
       // 日期預設收起來，點日期才展開；展開後每個項目直接列出改了什麼
-      return `<details class="day"><summary><h2>${fmtDay(day.date)}</h2><span>${day.items.length} 個項目</span></summary>
+      return `<details class="day"><summary><h2>${fmtDay(day.date)}</h2></summary>
         ${add.length ? `<h3>新增項目</h3><div class="links">${add.map(it => `<a href="${itemHref(it.id)}">${img(it)}${esc(nameOf(it))} ›</a>`).join("")}</div>` : ""}
         ${chg.length ? `<h3>數值調整</h3>${chg.map(e => {
           const it = DATA.items[e.id];

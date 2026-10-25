@@ -230,7 +230,6 @@ footer { color: var(--muted); font-size: 12px; display: grid; gap: 6px; padding-
 .log .day > summary::-webkit-details-marker { display: none; }
 .log .day > summary::before { content: "▸"; color: var(--muted); transition: transform .15s; }
 .log .day[open] > summary::before { transform: rotate(90deg); }
-.log .day > summary span { margin-left: auto; color: var(--muted); font-size: 13px; }
 .log .day[open] { padding-bottom: 8px; }
 .log h2 { margin: 0; font-size: 18px; font-weight: 900; }
 .log h3 { margin: 4px 0 8px; font-size: 14px; color: var(--muted); }
