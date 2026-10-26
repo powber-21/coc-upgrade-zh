@@ -1,4 +1,4 @@
-# 部落衝突升級數據
+# 部落衝突升級數據網站
 
 ### 👉 打開網頁：[powber-21.github.io/coc-upgrade-zh](https://powber-21.github.io/coc-upgrade-zh)
 
