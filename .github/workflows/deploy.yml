@@ -28,9 +28,17 @@ jobs:
       - name: 檢查資料有沒有更新
         id: ver
         run: |
-          NEW=$(git ls-remote https://github.com/chiefpansancolt/clash-of-clans-data.git HEAD | cut -f1)
+          # 原作者的資料抓不到時（例如專案被刪除），改用自己 fork 的備份
+          SRC=https://github.com/chiefpansancolt/clash-of-clans-data.git
+          NEW=$(git ls-remote "$SRC" HEAD | cut -f1 || true)
+          if [ -z "$NEW" ]; then
+            SRC=https://github.com/powber-21/clash-of-clans-data.git
+            NEW=$(git ls-remote "$SRC" HEAD | cut -f1)
+            echo "原作者的資料抓不到，改用備份：$SRC"
+          fi
           OLD=$(cat data-version.txt 2>/dev/null || true)
           echo "new=$NEW" >> "$GITHUB_OUTPUT"
+          echo "src=$SRC" >> "$GITHUB_OUTPUT"
           if [ "$NEW" = "$OLD" ] && [ "${{ github.event_name }}" = "schedule" ]; then
             echo "資料沒有變動，略過"
             echo "skip=true" >> "$GITHUB_OUTPUT"
@@ -43,10 +51,12 @@ jobs:
 
       - name: 產生網頁
         if: steps.ver.outputs.skip != 'true'
+        env:
+          SRC: ${{ steps.ver.outputs.src }}
         run: |
           pip install pillow
           # 下載完整歷史，build.py 才能比對每次更新改了什麼（更新紀錄頁）
-          git clone https://github.com/chiefpansancolt/clash-of-clans-data.git cocdata
+          git clone "$SRC" cocdata
           python build.py cocdata
 
       - uses: actions/upload-pages-artifact@v3
