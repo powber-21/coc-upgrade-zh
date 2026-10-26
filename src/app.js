@@ -281,10 +281,16 @@ function itemView(it) {
     ${hm && used.length ? "<hr>" : ""}
     ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
   const calc = calcPanel(it, top, myMax, hm ? `${hallName} ${my}` : "");
+  // 英雄頁輸入過「英雄等級」的話，主表格裡那一級亮起來
+  const mainT = it.tables.find(x => !x.extra), myLv = calc ? state.lv[it.id] : undefined;
+  const trAttr = (t, r) => {
+    const cls = [!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax && "above", t === mainT && r[0] === myLv && "mine"].filter(Boolean).join(" ");
+    return `${cls ? ` class="${cls}"` : ""}${t === mainT && typeof r[0] === "number" ? ` data-lv="${r[0]}"` : ""}`;
+  };
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax ? ' class="above"' : ""}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <tbody>${t.rows.map(r => `<tr${trAttr(t, r)}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>
@@ -414,6 +420,7 @@ function render() {
   const [village, tab] = h.split(".");
   if (it) {
     v.innerHTML = itemView(it) + footer();
+    watchMine();
   } else if (VILLAGES[village]) {
     v.innerHTML = villageView(village, tab) + footer();
   } else if (h === "hall") {
@@ -457,6 +464,24 @@ $("#view").addEventListener("input", e => {
   const cur = Math.max(lo, Math.min(hi, n));
   state.lv[it.id] = cur; save();
   $(".out", box).innerHTML = calcOut(it, t, ti, cur, +box.dataset.goal, box.dataset.hall);
+  document.querySelectorAll("tr[data-lv]").forEach(tr => { tr.classList.toggle("mine", +tr.dataset.lv === cur); tr.classList.remove("seen"); });
+  watchMine();
+});
+// 亮起來的那一列要等使用者滑到、出現在畫面上，才閃一下、彈一下（等級很高時一開始看不到那一列）
+let mineObs;
+function watchMine() {
+  if (mineObs) mineObs.disconnect();
+  const tr = $("tr.mine");
+  if (!tr || !("IntersectionObserver" in window)) return;
+  mineObs = new IntersectionObserver(es => {
+    if (es.some(e => e.isIntersecting)) { tr.classList.add("seen"); mineObs.disconnect(); }
+  }, { threshold: 0.9, rootMargin: `-${$("header").offsetHeight}px 0px 0px 0px` });  // 被固定的頁首蓋住的部分不算看得到
+  mineObs.observe(tr.firstElementChild);  // 看第一格（等級）：表格可以左右滑，整列常常有一部分在畫面外
+}
+// iPad 點輸入框以外的地方不會自己收鍵盤：點到別處時主動離開輸入框
+document.addEventListener("pointerdown", e => {
+  const a = document.activeElement;
+  if (a && a.matches("[data-lvin]") && e.target !== a) a.blur();
 });
 // 手機、平板按 Enter（完成）：收起鍵盤
 $("#view").addEventListener("keydown", e => {

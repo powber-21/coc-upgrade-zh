@@ -17,6 +17,7 @@
   --gold-ledge: #b98000;
   --accent: #8a5a00;
   --link: #0969da;
+  --mine: #1a7f37;
   --r-gold: #8a5a00;
   --r-elixir: #7a2a8c;
   --r-dark: #4a3a5c;
@@ -27,14 +28,14 @@
   :root:not([data-theme="light"]) {
     --bg: #12161c; --surface: #1b212b; --sunk: #171c24; --pill: #252d39; --ink: #e8ecf1; --muted: #9aa4b2;
     --line: #2b3340; --line-soft: #252c37; --ledge: #0b0f14; --night: #0d131b; --night-2: #1f2a38; --night-ledge: #05080c;
-    --accent: #f5b70a; --link: #4493f8; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
+    --accent: #f5b70a; --link: #4493f8; --mine: #3fb950; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #12161c; --surface: #1b212b; --sunk: #171c24; --pill: #252d39; --ink: #e8ecf1; --muted: #9aa4b2;
   --line: #2b3340; --line-soft: #252c37; --ledge: #0b0f14; --night: #0d131b; --night-2: #1f2a38; --night-ledge: #05080c;
-  --accent: #f5b70a; --link: #4493f8; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
+  --accent: #f5b70a; --link: #4493f8; --mine: #3fb950; --r-gold: #f2c230; --r-elixir: #e08af0; --r-dark: #c3a6e0;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -263,6 +264,15 @@ table { border-collapse: separate; border-spacing: 0; font-variant-numeric: tabu
 th, td { padding: 9px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line-soft); }
 thead th { position: sticky; top: 0; background: var(--night); font-size: 12px; font-weight: 700; color: #dce2ea; text-align: right; vertical-align: bottom; white-space: normal; min-width: 64px; line-height: 1.3; border-bottom: 0; }
 tbody tr:nth-child(even) td { background: var(--sunk); }
+/* 英雄頁：使用者輸入的「英雄等級」那一列亮起來
+   綠色底、左邊一條綠色標記，等級方塊維持原本的深色；滑到這一列出現在畫面上（.seen）後等 1 秒，整列閃一下、方塊彈一下 */
+tbody tr.mine td { background: color-mix(in srgb, var(--mine) 13%, var(--surface)); }
+tbody tr.mine td:first-child { box-shadow: inset 5px 0 0 var(--mine); }
+tbody tr.mine.seen td { animation: mine-flash .7s ease-out 1s; }
+tbody tr.mine.seen td:first-child .lvb { animation: mine-pop .45s ease-out 1s; }
+@keyframes mine-flash { from { background: color-mix(in srgb, var(--mine) 40%, var(--surface)); } }
+@keyframes mine-pop { 0% { transform: scale(1); } 45% { transform: scale(1.18); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { tbody tr.mine.seen td, tbody tr.mine.seen td:first-child .lvb { animation: none; } }
 /* 第一欄是固定欄，往右滑時其他欄會從它底下經過；只讓裡面的等級標籤變淡，格子本身保持不透明 */
 tbody tr.above td:not(:first-child), tbody tr.above td:first-child .lvb { opacity: .38; }
 th:first-child, td:first-child { position: sticky; left: 0; text-align: center; background: var(--surface); z-index: 1; border-right: 1px solid var(--line-soft); }
