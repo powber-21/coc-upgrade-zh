@@ -98,8 +98,11 @@ function tile(it, extra = "", dim = false) {
 }
 
 const attrOf = (it, k) => (it.attrs.find(a => a[0] === k) || [])[1];
-const G = key => (DATA.groups.find(g => g.key === key) || { items: [] }).items.map(id => DATA.items[id]);
-const sec = (title, items) => ({ title, items });
+// 依解鎖的大本營等級排序（第一個能升到 1 級以上的大本營）；同一級解鎖的、或沒有大本營限制的（例如部落首都）維持原本順序
+const unlockAt = it => { const i = it.hallMax ? it.hallMax.findIndex(x => x > 0) : -1; return i < 0 ? Infinity : i; };
+const byHall = items => items.map((it, i) => [it, i]).sort((a, b) => unlockAt(a[0]) - unlockAt(b[0]) || a[1] - b[1]).map(x => x[0]);
+const G = key => byHall((DATA.groups.find(g => g.key === key) || { items: [] }).items.map(id => DATA.items[id]));
+const sec = (title, items) => ({ title, items: byHall(items) });
 // 英雄裝備屬於哪個英雄（英雄的項目 id）
 const owner = e => "home-" + attrOf(e, "hero");
 
