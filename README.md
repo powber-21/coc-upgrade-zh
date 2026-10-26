@@ -13,7 +13,7 @@
 
 **加到 Android 主畫面：** 用 Chrome 打開網頁 → 右上角「⋮」→「加到主畫面」（有些版本叫「安裝應用程式」）。
 
-## 運作方式
+## 運作原理
 
 - `build.py` 把 [clash-of-clans-data](https://github.com/chiefpansancolt/clash-of-clans-data) 的 JSON 轉成單一網頁
 - `zh.json` 是所有中文翻譯（名稱、欄位、攻擊模式、數值文字）
