@@ -622,6 +622,9 @@ if (BASE) {
   out.faq = { view: faqView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.updates = { view: updatesView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.licenses = { view: licensesView() + footer(), crumbs: $("#crumbs").innerHTML };
+  for (const base of ["home", "builder"])
+    for (let h = 1; h <= hallMaxOf(base); h++)
+      out[hallPage(base, h)] = { view: hallView(base, h) + footer(), crumbs: $("#crumbs").innerHTML, title: hallTitle(base, h) };
 }
 else out[""] = { view: landingView() + footer(), crumbs: $("#crumbs").innerHTML };
 document.getElementById("out").textContent = JSON.stringify(out).replace(/</g, "\\\\u003c");
@@ -744,9 +747,21 @@ def write_site(data):
     page("licenses/", "../", "licenses", "授權條文｜部落衝突數據",
          "部落衝突數據網站使用的資料來源與授權條文。", "")
 
+    # 依大本營等級：每個等級一頁（th1/…、bh1/…），標題由 app.js 的 hallTitle() 產生
+    halls = []
+    for base, hall_id, prefix, zh in (("home", "home-town-hall", "th", "大本營"),
+                                      ("builder", "builder-builder-hall", "bh", "建築大師大本營")):
+        for h in range(1, len(items[hall_id]["hallMax"]) + 1):
+            hid = f"{prefix}{h}"
+            halls.append(hid)
+            title = pre[hid]["title"] if hid in pre else f"{zh} {h} 級升級上限｜{SITE_NAME}"
+            desc = (f"部落衝突（COC）{zh} {h} 級（{h} 本）時，所有建築、兵種、法術、英雄與裝備能升到的最高等級"
+                    f"和可擁有數量，一頁查完。")
+            page(f"{hid}/", "../", hid, title, desc, "")
+
     make_share_images()
     make_card_art()
-    write_seo_files(list(items) + ["faq", "updates"])
+    write_seo_files(list(items) + ["faq", "updates"] + halls)
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 

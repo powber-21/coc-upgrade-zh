@@ -188,7 +188,7 @@ function crumbs(parts) {
 
 function landingView() {
   crumbs([]);
-  const card = (v, title, tag, big) => `<a class="vcard${big ? " big" : ""}" href="${BASE}#${v}">
+  const card = (v, title, tag, big) => `<a class="vcard${big ? " big" : ""}" href="${v === "hall" ? hallHref() : `${BASE}#${v}`}">
     <img src="${BASE}card-${v}.webp" alt="${title}" width="800" height="396"><div class="vt"><h2>${title}</h2><p>${tag}</p></div></a>`;
   const V = VILLAGES;
   return `<div class="intro"><h1>升級數據</h1><p>部落衝突所有建築、兵種、法術、英雄與裝備的升級費用、時間和屬性。</p></div>
@@ -208,13 +208,37 @@ function villageView(v, tab) {
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => tile(it)).join("")}</div></section>`).join("")}`;
 }
 
-function hallView() {
+// 依大本營等級：每個等級有自己的網址（主村莊 th16/、建築大師基地 bh10/），給 Google 搜尋和分享用
+const hallMaxOf = base => DATA.items[base === "home" ? "home-town-hall" : "builder-builder-hall"].hallMax.length;
+const hallPage = (base, h) => (base === "home" ? "th" : "bh") + h;
+// 頁面標題，與 build.py 產生的一致
+const hallTitle = (base, h) => base === "home"
+  ? `部落衝突 ${h} 本升級上限｜大本營 ${h} 級建築、兵種、英雄能升到幾級｜部落衝突數據`
+  : `建築大師 ${h} 本升級上限｜建築大師大本營 ${h} 級能升到幾級｜部落衝突數據`;
+// 首頁「依大本營等級」卡片連到使用者上次選的等級
+function hallHref() {
+  const base = state.hallBase === "builder" ? "builder" : "home", max = hallMaxOf(base);
+  return `${BASE}${hallPage(base, state.hall && state.hall <= max ? state.hall : max)}/`;
+}
+const HALL_M = PAGE_ITEM.match(/^(th|bh)(\d+)$/);
+let hallCur = HALL_M ? { base: HALL_M[1] === "th" ? "home" : "builder", h: +HALL_M[2] } : null;
+if (hallCur) { state.hallBase = hallCur.base; state.hall = hallCur.h; save(); }
+// 切換等級：畫面直接換，網址和標題跟著改，但不留上一頁紀錄
+function goHall(base, h) {
+  hallCur = { base, h };
+  state.hallBase = base; state.hall = h; save();
+  const url = `${BASE}${hallPage(base, h)}/`;
+  history.replaceState(null, "", url);
+  document.title = hallTitle(base, h);
+  const can = $('link[rel="canonical"]');
+  if (can) can.href = new URL(url, location.href).href;
+  render();
+}
+
+function hallView(base, h) {
   crumbs([["依大本營等級"]]);
-  const base = state.hallBase;
   const hallId = base === "home" ? "home-town-hall" : "builder-builder-hall";
-  const max = DATA.items[hallId].hallMax.length;
-  if (!state.hall || state.hall > max) state.hall = max;
-  const h = state.hall;
+  const max = hallMaxOf(base);
   const hallName = base === "home" ? "大本營" : "建築大師大本營";
   const countAt = it => {
     if (!it.count) return null;
@@ -427,6 +451,12 @@ function render() {
   if (PAGE_ITEM === "faq") { v.innerHTML = faqView() + footer(); return; }
   if (PAGE_ITEM === "updates") { v.innerHTML = updatesView() + footer(); return; }
   if (PAGE_ITEM === "licenses") { v.innerHTML = licensesView() + footer(); return; }
+  if (hallCur) {
+    v.innerHTML = hallView(hallCur.base, hallCur.h) + footer();
+    v.querySelectorAll("[data-h]").forEach(b => b.onclick = () => goHall(hallCur.base, +b.dataset.h));
+    v.querySelectorAll("[data-hb]").forEach(b => b.onclick = () => goHall(b.dataset.hb, hallMaxOf(b.dataset.hb)));
+    return;
+  }
   const it = DATA.items[h];
   const [village, tab] = h.split(".");
   if (it) {
@@ -435,9 +465,7 @@ function render() {
   } else if (VILLAGES[village]) {
     v.innerHTML = villageView(village, tab) + footer();
   } else if (h === "hall") {
-    v.innerHTML = hallView() + footer();
-    v.querySelectorAll("[data-h]").forEach(b => b.onclick = () => { state.hall = +b.dataset.h; save(); render(); });
-    v.querySelectorAll("[data-hb]").forEach(b => b.onclick = () => { state.hallBase = b.dataset.hb; state.hall = 0; save(); render(); });
+    location.replace(hallHref());  // 舊的 #hall 連結轉到新的等級頁
   } else {
     v.innerHTML = landingView() + footer();
   }
