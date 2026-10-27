@@ -213,8 +213,8 @@ const hallMaxOf = base => DATA.items[base === "home" ? "home-town-hall" : "build
 const hallPage = (base, h) => (base === "home" ? "th" : "bh") + h;
 // 頁面標題，與 build.py 產生的一致
 const hallTitle = (base, h) => base === "home"
-  ? `部落衝突 ${h} 本升級上限｜大本營 ${h} 級建築、兵種、英雄能升到幾級｜部落衝突數據`
-  : `建築大師 ${h} 本升級上限｜建築大師大本營 ${h} 級能升到幾級｜部落衝突數據`;
+  ? `部落衝突${h}本升級數據｜${h}本建築、兵種、英雄能升到幾級｜部落衝突數據`
+  : `建築大師${h}本升級數據｜${h}本建築、兵種、英雄能升到幾級｜部落衝突數據`;
 // 首頁「依大本營等級」卡片連到使用者上次選的等級
 function hallHref() {
   const base = state.hallBase === "builder" ? "builder" : "home", max = hallMaxOf(base);
@@ -248,7 +248,8 @@ function hallView(base, h) {
   };
   const sections = VILLAGES[base].tabs.flatMap(([, , fn]) => fn())
     .map(s => sec(s.title, s.items.filter(it => it.hallMax && it.id !== hallId))).filter(s => s.items.length);
-  return `<div class="seg" role="group" aria-label="村莊">
+  return `<div class="intro"><h1>${base === "home" ? "大本營" : "建築大師"}${h}本升級數據</h1></div>
+    <div class="seg" role="group" aria-label="村莊">
       <button data-hb="home" aria-pressed="${base === "home"}">家鄉村莊</button><button data-hb="builder" aria-pressed="${base === "builder"}">建築大師基地</button></div>
     <div class="hallpick"><span class="lbl">${hallName}</span>${Array.from({ length: max }, (_, i) => `<button class="chip" data-h="${i + 1}" aria-pressed="${i + 1 === h}">${i + 1}</button>`).join("")}</div>
     <p class="note">每個項目在${hallName} ${h} 級時能升到的最高等級，以及可擁有數量（×）。灰色代表此等級尚未解鎖。</p>
