@@ -15,7 +15,7 @@ from html import escape as esc
 from PIL import Image
 
 SRC = sys.argv[1]
-SITE_URL = "https://powber-21.github.io/coc-upgrade-zh"
+SITE_URL = "https://cocdata.app"
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "site")
 

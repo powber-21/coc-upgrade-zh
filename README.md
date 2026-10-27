@@ -1,6 +1,6 @@
 # 部落衝突升級數據網站
 
-### 👉 打開網頁：[powber-21.github.io/coc-upgrade-zh](https://powber-21.github.io/coc-upgrade-zh)
+### 👉 打開網頁：[cocdata.app](https://cocdata.app)
 
 部落衝突（Clash of Clans）所有建築、兵種、法術、英雄、裝備與戰寵的升級費用、時間和屬性，繁體中文介面。
 
