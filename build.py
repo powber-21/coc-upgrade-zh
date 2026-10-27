@@ -726,6 +726,9 @@ def write_site(data):
     make_share_images()
     make_card_art()
     write_seo_files(list(items) + ["faq", "updates"])
+    # 授權條文放進網站本身，頁尾連結不必連到 GitHub；加 BOM 讓瀏覽器用 UTF-8 顯示中文
+    text = open(os.path.join(HERE, "THIRD_PARTY_LICENSES.md"), encoding="utf8").read()
+    open(os.path.join(OUT, "licenses.txt"), "w", encoding="utf-8-sig").write(text)
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 
