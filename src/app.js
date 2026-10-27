@@ -90,7 +90,7 @@ function lvCell(l) {
   return esc(l ?? "");
 }
 
-const img = (it, cls = "") => it.img ? `<img src="${BASE}${it.img}" alt="" class="${cls}" loading="lazy">` : `<div class="noimg ${cls}">${esc((it.zh || it.en)[0])}</div>`;
+const img = (it, cls = "") => it.img ? `<img src="${BASE}${it.img}" alt="${esc(it.zh || it.en)}" class="${cls}" loading="lazy">` : `<div class="noimg ${cls}">${esc((it.zh || it.en)[0])}</div>`;
 const nameOf = it => it.zh || it.en;
 
 function tile(it, extra = "", dim = false) {
@@ -189,7 +189,7 @@ function crumbs(parts) {
 function landingView() {
   crumbs([]);
   const card = (v, title, tag, big) => `<a class="vcard${big ? " big" : ""}" href="${BASE}#${v}">
-    <img src="${BASE}card-${v}.webp" alt="" width="800" height="396"><div class="vt"><h2>${title}</h2><p>${tag}</p></div></a>`;
+    <img src="${BASE}card-${v}.webp" alt="${title}" width="800" height="396"><div class="vt"><h2>${title}</h2><p>${tag}</p></div></a>`;
   const V = VILLAGES;
   return `<div class="intro"><h1>升級數據</h1><p>部落衝突所有建築、兵種、法術、英雄與裝備的升級費用、時間和屬性。</p></div>
     <div class="passbar"><div class="lbl">月卡折扣</div>${passBar()}</div>
@@ -288,7 +288,7 @@ function itemView(it) {
     return `${cls ? ` class="${cls}"` : ""}${t === mainT && typeof r[0] === "number" ? ` data-lv="${r[0]}"` : ""}`;
   };
   const tables = it.tables.map(t => `<section class="tbl">
-    <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
+    <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="${esc(t.title || "")}" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
     <tbody>${t.rows.map(r => `<tr${trAttr(t, r)}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>

@@ -16,6 +16,7 @@ from PIL import Image
 
 SRC = sys.argv[1]
 SITE_URL = "https://cocdata.app"
+SITE_NAME = "部落衝突數據"
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "site")
 
@@ -480,6 +481,8 @@ def make_share_images():
     _paste(icon, th, 150, 90, 168)
     icon.convert("RGB").save(os.path.join(OUT, "apple-touch-icon.png"), optimize=True)
     icon.resize((32, 32), Image.LANCZOS).convert("RGB").save(os.path.join(OUT, "favicon-32.png"), optimize=True)
+    # Google 搜尋結果的網站圖示要 48px 的倍數
+    icon.resize((192, 192), Image.LANCZOS).convert("RGB").save(os.path.join(OUT, "favicon-192.png"), optimize=True)
 
 
 def data_date():
@@ -690,7 +693,7 @@ def write_site(data):
     pre = prerender()
     loading = '<div class="loading" role="status">載入中<i></i><i></i><i></i></div>'
 
-    def page(path, base, item, title, desc, static):
+    def page(path, base, item, title, desc, static, ld=""):
         # 有預先產生的畫面就直接放進去；沒有的話先顯示「載入中」，原本的文字清單藏起來給搜尋引擎看
         p = pre.get(item)
         view = p["view"] if p else loading
@@ -699,7 +702,7 @@ def write_site(data):
         html = shell
         for k, v in (("__TITLE__", esc(title)), ("__DESC__", esc(desc)), ("__URL__", f"{SITE_URL}/{path}"),
                      ("__BASE__", base), ("__ITEM__", item), ("__VER__", ver), ("__SITE__", SITE_URL),
-                     ("__CRUMBS__", p["crumbs"] if p else ""), ("__STATIC__", view)):
+                     ("__CRUMBS__", p["crumbs"] if p else ""), ("__LDJSON__", ld), ("__STATIC__", view)):
             html = html.replace(k, v)
         os.makedirs(os.path.join(OUT, path), exist_ok=True)
         open(os.path.join(OUT, path, "index.html"), "w", encoding="utf8").write(html)
@@ -709,9 +712,10 @@ def write_site(data):
         f"<h2>{esc(base_zh.get(g['base'], ''))} · {esc(g['zh'])}</h2><ul>"
         + "".join(f'<li><a href="{i}/">{esc(items[i]["zh"] or items[i]["en"])}</a></li>' for i in g["items"])
         + "</ul>" for g in groups if g["items"])
-    page("", "", "", "部落衝突升級數據｜COC 兵種、建築、英雄升級時間與費用",
+    # 標題結尾統一用網站名稱 SITE_NAME，Google 比較容易認出網站叫什麼
+    page("", "", "", f"部落衝突升級數據｜COC 兵種、建築、英雄升級時間與費用｜{SITE_NAME}",
          "部落衝突（Clash of Clans, COC）繁體中文升級數據：所有兵種、建築、法術、英雄、裝備與戰寵的升級時間、升級費用和屬性，可依大本營等級查詢上限，每天自動更新。",
-         "<h1>部落衝突升級數據</h1>" + lists)
+         "<h2>部落衝突升級數據</h2>" + lists)  # 畫面上已經有 <h1>，藏起來的清單不再放第二個 <h1>
 
     for uid, it in items.items():
         name = it["zh"] or it["en"]
@@ -719,12 +723,17 @@ def write_site(data):
         kind = group_zh.get(it["group"], "")
         rows = it["tables"][0]["rows"] if it["tables"] else []
         summary = f"共 {len(rows)} 個等級" if rows else ""
-        title = f"{name}升級數據｜{it['en']}｜部落衝突 COC" if it["zh"] else f"{name} 升級數據｜部落衝突 COC"
+        title = f"{name}升級數據｜{it['en']}｜COC｜{SITE_NAME}" if it["zh"] else f"{name} 升級數據｜COC｜{SITE_NAME}"
         desc = (f"部落衝突{base_zh.get(it['base'], '')}{kind}「{name}」{en}各等級的升級費用、升級時間、生命值與傷害"
                 f"{'，' + summary if summary else ''}。COC 繁體中文升級數據，每天自動更新。")
         static = (f"<h1>{esc(name)}</h1><p>{esc(it['en'])}</p><p>{esc(desc)}</p>"
                   + (f"<p>{esc(it['desc'])}</p>" if it.get("desc") else "") + '<p><a href="../">回到部落衝突升級數據首頁</a></p>')
-        page(f"{uid}/", "../", uid, title, desc, "" if uid in pre else static)
+        # 麵包屑結構化資料：搜尋結果顯示「部落衝突數據 › 弓箭手」
+        crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": SITE_NAME, "item": f"{SITE_URL}/"},
+            {"@type": "ListItem", "position": 2, "name": name}]}
+        ld = '<script type="application/ld+json">' + json.dumps(crumbs, ensure_ascii=False).replace("<", "\\u003c") + "</script>"
+        page(f"{uid}/", "../", uid, title, desc, "" if uid in pre else static, ld)
 
     page("faq/", "../", "faq", "常見問題｜部落衝突數據",
          "部落衝突數據網站的常見問題：資料來源、更新頻率、中文名稱、怎麼加入手機主畫面。", "")
