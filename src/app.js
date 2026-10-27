@@ -252,7 +252,7 @@ function hallView(base, h) {
     <div class="seg" role="group" aria-label="村莊">
       <button data-hb="home" aria-pressed="${base === "home"}">家鄉村莊</button><button data-hb="builder" aria-pressed="${base === "builder"}">建築大師基地</button></div>
     <div class="hallpick"><span class="lbl">${hallName}</span>${Array.from({ length: max }, (_, i) => `<button class="chip" data-h="${i + 1}" aria-pressed="${i + 1 === h}">${i + 1}</button>`).join("")}</div>
-    <p class="note">每個項目在${hallName} ${h} 級時能升到的最高等級，以及可擁有數量（×）。灰色代表此等級尚未解鎖。</p>
+    <p class="note">每個項目在${hallName}${h}級時能升到的最高等級，以及可擁有數量（×）。灰色代表此等級尚未解鎖。</p>
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {
       const lv = it.hallMax[h - 1], n = countAt(it);
       return tile(it, `<div class="lv">${lv ? "Lv " + lv : "—"}${n ? ` <span style="font-size:12px">×${n}</span>` : ""}</div>`, !lv);
@@ -302,10 +302,10 @@ function itemView(it) {
       <button type="button" data-my="-1" data-b="${it.base}" data-n="${hm.length}" aria-label="${hallName}降一級"${my <= 1 ? " disabled" : ""}>−</button>
       <select class="n" data-myset data-b="${it.base}" aria-label="選擇${hallName}等級">${hm.map((_, i) => `<option value="${i + 1}"${i + 1 === my ? " selected" : ""}>${i + 1}</option>`).join("")}</select>
       <button type="button" data-my="1" data-b="${it.base}" data-n="${hm.length}" aria-label="${hallName}升一級"${my >= hm.length ? " disabled" : ""}>+</button></div></div>
-      <div class="say">${hallName} <b>${my}</b> ${myMax ? `可升到 <b class="hl">Lv ${myMax}</b>，表中淡色的等級需要更高的${hallName}。` : "還不能使用。"}</div>` : ""}
+      <div class="say">${hallName}<b>${my}</b>${myMax ? `可升到<b class="hl">Lv ${myMax}</b>，表中淡色的等級需要更高的${hallName}。` : "還不能使用。"}</div>` : ""}
     ${hm && used.length ? "<hr>" : ""}
     ${used.length ? `<div class="lbl">月卡折扣</div>${passBar()}` : ""}</div>` : "";
-  const calc = calcPanel(it, top, myMax, hm ? `${hallName} ${my}` : "");
+  const calc = calcPanel(it, top, myMax, hm ? `${hallName}${my}` : "");
   // 英雄頁輸入過「英雄等級」的話，主表格裡那一級亮起來
   const mainT = it.tables.find(x => !x.extra), myLv = calc ? state.lv[it.id] : undefined;
   const trAttr = (t, r) => {
@@ -341,9 +341,9 @@ function calcPanel(it, top, myMax, hallText) {
 }
 function calcOut(it, t, ti, cur, goal, hallText) {
   if (!goal) return `<div class="say">${hallText}還不能使用。</div>`;
-  if (cur >= goal) return `<div class="say">已經是${hallText ? `${hallText} 能升到的` : ""}最高等級 <b class="hl">Lv ${goal}</b>，不用再升級。</div>`;
+  if (cur >= goal) return `<div class="say">已經是${hallText ? `${hallText}能升到的` : ""}最高等級<b class="hl">Lv ${goal}</b>，不用再升級。</div>`;
   const time = t.rows.reduce((a, r) => typeof r[0] === "number" && r[0] > cur && r[0] <= goal && r[ti] ? a + offT(r[ti].t) : a, 0);
-  return `<div class="say">從 Lv ${cur} 升到 <b class="hl">Lv ${goal}</b>${hallText ? `（${hallText} 的上限）` : ""}所需時間：</div>
+  return `<div class="say">從Lv ${cur}升到<b class="hl">Lv ${goal}</b>${hallText ? `（${hallText}的上限）` : ""}所需時間：</div>
     <div class="sum">⏱ ${fmtT(time)}</div>${discount ? `<div class="say">已套用月卡 -${discount}%。</div>` : ""}`;
 }
 
@@ -385,7 +385,7 @@ function licensesView() {
 }
 
 // 版本更新：build.py 比對資料來源每次更新，列出新增的項目和改變的數值
-const lvName = l => l && typeof l === "object" ? `超級蓄能 ${l.sc}` : `${l} 級`;
+const lvName = l => l && typeof l === "object" ? `超級蓄能${l.sc}` : `${l}級`;
 function logVal(v) {
   if (v === null || v === undefined || v === "") return "無";
   if (Array.isArray(v)) return v.map(x => x && x.u ? `${x.zh || x.u} ×${x.n}` : value(x)).join("、");
@@ -398,7 +398,7 @@ function logLines(ch) {
   for (const c of ch) {
     const pre = c.tbl ? esc(c.tbl) + " · " : "";
     if (c.add) lines.push(`新增「${esc(c.tbl)}」`);
-    else if (c.lvAdd) lines.push(`${c.tbl ? esc(c.tbl) + "：" : ""}新增 ${c.lvAdd.map(lvName).join("、")}`);
+    else if (c.lvAdd) lines.push(`${c.tbl ? esc(c.tbl) + "：" : ""}新增${c.lvAdd.map(lvName).join("、")}`);
     else if (!("lv" in c)) lines.push(`${pre}${esc(label(c.k))}：${logVal(c.o)} → ${logVal(c.n)}`);
     else {
       // 同一個欄位改了好幾級，合成一行
@@ -409,7 +409,7 @@ function logLines(ch) {
   }
   return lines.map(l => typeof l === "string" ? l : `${l.pre}${esc(label(l.k))}${l.v.map(x => `<span class="lvl">${x}</span>`).join("")}`);
 }
-const fmtDay = d => { const [y, m, dd] = d.split("-"); return `${y} 年 ${+m} 月 ${+dd} 日`; };
+const fmtDay = d => { const [y, m, dd] = d.split("-"); return `${y}年${+m}月${+dd}日`; };
 function updatesView() {
   crumbs([]);  // 路徑只顯示「首頁」，目前這頁由右上角亮起來的連結表示
   const log = DATA.log || [];
@@ -425,7 +425,7 @@ function updatesView() {
           return `<div class="item"><a class="name" href="${itemHref(it.id)}">${img(it)}<b>${esc(nameOf(it))}</b> ›</a>
             <ul>${logLines(e.ch).map(l => `<li>${l}</li>`).join("")}</ul></div>`;
         }).join("")}` : ""}
-        <button type="button" class="fold" data-fold>▴ 收合 ${fmtDay(day.date)}</button></details>`;
+        <button type="button" class="fold" data-fold>▴ 收合${fmtDay(day.date)}</button></details>`;
     }).join("") || `<p class="note">目前還沒有版本更新紀錄。</p>`}</div>`;
 }
 // 最近一次資料更新在 3 天內、而且使用者還沒看過，「版本更新」連結旁顯示紅點

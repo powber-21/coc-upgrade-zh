@@ -313,7 +313,7 @@ def sub_tables(d):
         for k, v in lv.items():
             if has_levels(v):
                 name = v.get("name")
-                t_title = f"{zh_name(name) if name else k}（{zh_name(d['name'])} {lv.get('level')} 級）"
+                t_title = f"{zh_name(name) if name else k}（{zh_name(d['name'])}{lv.get('level')}級）"
                 unit_table(v, t_title)
     return out
 
@@ -716,7 +716,7 @@ def write_site(data):
         + "".join(f'<li><a href="{i}/">{esc(items[i]["zh"] or items[i]["en"])}</a></li>' for i in g["items"])
         + "</ul>" for g in groups if g["items"])
     # 標題結尾統一用網站名稱 SITE_NAME，Google 比較容易認出網站叫什麼
-    page("", "", "", f"部落衝突升級數據｜COC 兵種、建築、英雄升級時間與費用｜{SITE_NAME}",
+    page("", "", "", f"部落衝突升級數據｜COC兵種、建築、英雄升級時間與費用｜{SITE_NAME}",
          "部落衝突（Clash of Clans, COC）繁體中文升級數據：所有兵種、建築、法術、英雄、裝備與戰寵的升級時間、升級費用和屬性，可依大本營等級查詢上限，每天自動更新。",
          "<h2>部落衝突升級數據</h2>" + lists)  # 畫面上已經有 <h1>，藏起來的清單不再放第二個 <h1>
 
@@ -725,10 +725,10 @@ def write_site(data):
         en = f"（{it['en']}）" if it["zh"] else ""
         kind = group_zh.get(it["group"], "")
         rows = it["tables"][0]["rows"] if it["tables"] else []
-        summary = f"共 {len(rows)} 個等級" if rows else ""
-        title = f"{name}升級數據｜{it['en']}｜COC｜{SITE_NAME}" if it["zh"] else f"{name} 升級數據｜COC｜{SITE_NAME}"
+        summary = f"共{len(rows)}個等級" if rows else ""
+        title = f"{name}升級數據｜{it['en']}｜COC｜{SITE_NAME}" if it["zh"] else f"{name}升級數據｜COC｜{SITE_NAME}"
         desc = (f"部落衝突{base_zh.get(it['base'], '')}{kind}「{name}」{en}各等級的升級費用、升級時間、生命值與傷害"
-                f"{'，' + summary if summary else ''}。COC 繁體中文升級數據，每天自動更新。")
+                f"{'，' + summary if summary else ''}。COC繁體中文升級數據，每天自動更新。")
         static = (f"<h1>{esc(name)}</h1><p>{esc(it['en'])}</p><p>{esc(desc)}</p>"
                   + (f"<p>{esc(it['desc'])}</p>" if it.get("desc") else "") + '<p><a href="../">回到部落衝突升級數據首頁</a></p>')
         # 麵包屑結構化資料：搜尋結果顯示「部落衝突數據 › 弓箭手」
@@ -754,8 +754,8 @@ def write_site(data):
         for h in range(1, len(items[hall_id]["hallMax"]) + 1):
             hid = f"{prefix}{h}"
             halls.append(hid)
-            title = pre[hid]["title"] if hid in pre else f"{zh} {h} 級升級上限｜{SITE_NAME}"
-            desc = (f"部落衝突（COC）{zh} {h} 級（{h} 本）時，所有建築、兵種、法術、英雄與裝備能升到的最高等級"
+            title = pre[hid]["title"] if hid in pre else f"{zh}{h}級升級數據｜{SITE_NAME}"
+            desc = (f"部落衝突（COC）{zh}{h}級（{h}本）時，所有建築、兵種、法術、英雄與裝備能升到的最高等級"
                     f"和可擁有數量，一頁查完。")
             page(f"{hid}/", "../", hid, title, desc, "")
 
