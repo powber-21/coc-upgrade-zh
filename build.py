@@ -498,6 +498,14 @@ def data_date():
         return datetime.date.today().isoformat()
 
 
+def license_text():
+    """從 THIRD_PARTY_LICENSES.md 取出 ``` 框起來的 MIT 授權全文，給授權條文頁使用。
+    原文每 80 字硬換行，在手機上會斷得很亂，所以段落內的換行改成空格，只保留段落之間的空行。"""
+    md = open(os.path.join(HERE, "THIRD_PARTY_LICENSES.md"), encoding="utf8").read()
+    paras = md.split("```")[1].strip().split("\n\n")
+    return "\n\n".join(" ".join(line.strip() for line in p.splitlines()) for p in paras)
+
+
 def write_seo_files(ids):
     """產生給搜尋引擎的 robots.txt 與 sitemap.xml（首頁加上每個項目頁）。"""
     # 用資料最後更新的日期，而不是每次產生網頁的日期，避免假裝每天都有新內容
@@ -599,7 +607,7 @@ def main():
 
     data = {"groups": groups, "items": items, "res": {k: thumb(v, 48, inline=True) for k, v in RES_ICONS.items()},
             "updated": data_date(), "log": changelog([i for g in groups for i in g["items"]]),
-            "zh": {k: ZH[k] for k in ("labels", "modes", "values")}}
+            "zh": {k: ZH[k] for k in ("labels", "modes", "values")}, "license": license_text()}
     write_site(data)
 
 
@@ -610,6 +618,7 @@ if (BASE) {
   for (const id in DATA.items) out[id] = { view: itemView(DATA.items[id]) + footer(), crumbs: $("#crumbs").innerHTML };
   out.faq = { view: faqView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.updates = { view: updatesView() + footer(), crumbs: $("#crumbs").innerHTML };
+  out.licenses = { view: licensesView() + footer(), crumbs: $("#crumbs").innerHTML };
 }
 else out[""] = { view: landingView() + footer(), crumbs: $("#crumbs").innerHTML };
 document.getElementById("out").textContent = JSON.stringify(out).replace(/</g, "\\\\u003c");
@@ -723,12 +732,12 @@ def write_site(data):
     page("updates/", "../", "updates", "版本更新｜部落衝突數據",
          "部落衝突（COC）版本更新：每次更新新增的兵種、建築、裝備，以及調整過的升級費用、時間和數值。", "")
 
+    page("licenses/", "../", "licenses", "授權條文｜部落衝突數據",
+         "部落衝突數據網站使用的資料來源與授權條文。", "")
+
     make_share_images()
     make_card_art()
     write_seo_files(list(items) + ["faq", "updates"])
-    # 授權條文放進網站本身，頁尾連結不必連到 GitHub；加 BOM 讓瀏覽器用 UTF-8 顯示中文
-    text = open(os.path.join(HERE, "THIRD_PARTY_LICENSES.md"), encoding="utf8").read()
-    open(os.path.join(OUT, "licenses.txt"), "w", encoding="utf-8-sig").write(text)
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 

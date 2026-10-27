@@ -179,9 +179,9 @@ let state = { sub: {}, hall: 0, hallBase: "home", my: {}, lv: {} };
 try { Object.assign(state, JSON.parse(localStorage.getItem("coc-state2") || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem("coc-state2", JSON.stringify(state)); } catch (e) {} };
 
-// 「首頁」：在首頁和它底下的頁面都亮起來（白字加金色底線），只有版本更新、常見問題頁不亮
+// 「首頁」：在首頁和它底下的頁面都亮起來（白字加金色底線），只有版本更新、常見問題、授權條文頁不亮
 function crumbs(parts) {
-  const on = PAGE_ITEM !== "updates" && PAGE_ITEM !== "faq";
+  const on = PAGE_ITEM !== "updates" && PAGE_ITEM !== "faq" && PAGE_ITEM !== "licenses";
   $("#crumbs").innerHTML = [`<a class="home" href="${BASE}./"${on ? ` aria-current="${parts.length ? "true" : "page"}"` : ""}>首頁</a>`, ...parts.map(([t, href]) => href ? `<a href="${BASE}#${href}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)]
     .join(`<span class="sep">›</span>`);
 }
@@ -348,6 +348,17 @@ function faqView() {
     <div class="faq">${qa.map(([q, a]) => `<section><h2>${q}</h2><p>${a}</p></section>`).join("")}</div>`;
 }
 
+// 授權條文：MIT 全文由 build.py 從 THIRD_PARTY_LICENSES.md 取出放在 DATA.license
+function licensesView() {
+  crumbs([]);
+  return `<div class="intro"><h1>授權條文</h1><p>本網站的遊戲數據與圖片取自以下來源，依其授權條款使用。</p></div>
+    <div class="faq">
+      <section><h2>clash-of-clans-data</h2>
+        <p>所有升級數據、屬性與圖示取自開源專案 <a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，依 MIT 授權使用：</p>
+        <pre class="license">${esc(DATA.license || "")}</pre></section>
+    </div>`;
+}
+
 // 版本更新：build.py 比對資料來源每次更新，列出新增的項目和改變的數值
 const lvName = l => l && typeof l === "object" ? `超級蓄能 ${l.sc}` : `${l} 級`;
 function logVal(v) {
@@ -397,7 +408,7 @@ const logRecent = () => DATA.log && DATA.log.length && Date.now() - new Date(DAT
 
 function footer() {
   return `<footer><p><b>資料最後更新：${esc(DATA.updated || "")}</b></p>
-    <p>資料來源：<a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，© 2026 Christopher Pezza，依 MIT 授權使用（<a href="${BASE}licenses.txt" target="_blank" rel="noopener">授權條文</a>）。中文名稱為對照翻譯，可能與遊戲內略有不同。</p>
+    <p>資料來源：<a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，© 2026 Christopher Pezza，依 MIT 授權使用（<a href="${BASE}licenses/">授權條文</a>）。中文名稱為對照翻譯，可能與遊戲內略有不同。</p>
     <p><a href="${BASE}updates/">版本更新</a>　<a href="${BASE}faq/">常見問題</a></p>
     <p>本網站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">www.supercell.com/fan-content-policy</a>.</p></footer>`;
 }
@@ -415,6 +426,7 @@ function render() {
   if (q.trim()) { v.innerHTML = searchView(q) + footer(); return; }
   if (PAGE_ITEM === "faq") { v.innerHTML = faqView() + footer(); return; }
   if (PAGE_ITEM === "updates") { v.innerHTML = updatesView() + footer(); return; }
+  if (PAGE_ITEM === "licenses") { v.innerHTML = licensesView() + footer(); return; }
   const it = DATA.items[h];
   const [village, tab] = h.split(".");
   if (it) {
