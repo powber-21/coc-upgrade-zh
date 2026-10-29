@@ -401,7 +401,7 @@ function progress(d) {
   const th = (have["home-town-hall"] || [{ lv: 1 }])[0].lv;
   // 工人數：建築工人小屋的數量，蓋了 B.O.B 小屋再多一位；使用者可以在頁面上自己調整
   const huts = ((have["home-builders-hut"] || []).length || 1) + ((have["home-bobs-hut"] || []).some(b => b.lv > 0) ? 1 : 0);
-  const workers = state.builders || huts;
+  const workers = Math.min(MAX_BUILDERS, state.builders || huts);
   const queues = QUEUES.map(([key, zh, groups]) => {
     const rows = [];
     for (const g of groups) for (const id of (DATA.groups.find(x => x.key === g) || { items: [] }).items) {
@@ -420,7 +420,7 @@ function progress(d) {
         if (b.left !== null) busy = true;
         for (let l = b.lv + 1; l <= goal; l++) time += l === b.lv + 1 && b.left !== null ? b.left : secs[l] || 0;
       }
-      if (todo) rows.push({ it, from: Math.min(...list.map(b => b.lv)), goal, todo, time, busy });
+      if (todo) rows.push({ it, from: Math.min(...list.map(b => b.lv)), goal, todo, time, busy, locked: list.every(b => !b.lv) });
     }
     rows.sort((a, b) => b.time - a.time);
     const total = rows.reduce((a, r) => a + r.time, 0);
@@ -429,7 +429,7 @@ function progress(d) {
   return { th, huts, workers, passed, queues };
 }
 
-const MAX_BUILDERS = 8;
+const MAX_BUILDERS = 6;
 const mineDate = d => { const w = new Date(d.timestamp * 1000); return `${w.getMonth() + 1}/${w.getDate()}`; };
 // 我的等級：從匯出資料找出這個項目每一級有幾個（例如箭塔 {4: 1, 6: 4, 8: 2, 10: 1}）
 function myLevels(it) {
@@ -460,16 +460,16 @@ function progressView(d) {
         <button type="button" data-bld="-1" aria-label="少一位工人"${p.workers <= 1 ? " disabled" : ""}>−</button>
         <select class="n" data-bldset aria-label="選擇建築工人數量">${Array.from({ length: MAX_BUILDERS }, (_, i) => `<option value="${i + 1}"${i + 1 === p.workers ? " selected" : ""}>${i + 1}</option>`).join("")}</select>
         <button type="button" data-bld="1" aria-label="多一位工人"${p.workers >= MAX_BUILDERS ? " disabled" : ""}>+</button></div></div>
-      <div class="say">${state.builders && state.builders !== p.huts ? `已改成 <b>${p.workers}</b> 位（匯出資料是 ${p.huts} 位，<button type="button" class="linkbtn" data-bldauto>改回</button>）。` : `依匯出資料是 <b>${p.huts}</b> 位。已解鎖更多工人的話，按「+」調整。`}</div>
+      <div class="say">${state.builders && state.builders !== p.huts ? `已改成 <b>${p.workers}</b> 位（匯出資料是 ${p.huts} 位，<button type="button" class="linkbtn" data-bldauto>改回</button>）。` : `依匯出資料是 <b>${p.huts}</b> 位${p.huts >= MAX_BUILDERS ? "（已是上限）。" : "。已解鎖更多工人的話，按「+」調整。"}`}</div>
       <hr><div class="lbl">月卡折扣</div>${passBar()}</div>
     <div class="qsum">${qs.map(q => `<div class="panel"><div class="lbl">${q.zh}</div>
       ${q.total ? `<div class="big">⏱ ${fmtD(q.est)}</div>
         <div class="say">${q.key === "builder" ? `${p.workers} 位工人同時升級的估計。全部加起來 ${fmtD(q.total)}。` : "一次只能升級一個。"}</div>`
         : `<div class="big">✅ 已升滿</div>`}</div>`).join("")}</div>
-    ${qs.filter(q => q.rows.length).map(q => `<section><h2 class="group">${q.zh}・還沒升滿</h2><div class="todo">${q.rows.map(r =>
-      `<a href="${itemHref(r.it.id)}">${img(r.it)}<div><div class="n">${esc(nameOf(r.it))}${r.busy ? `<span class="tag">升級中</span>` : ""}</div>
+    ${qs.filter(q => q.rows.length).map(q => `<section><h2 class="group">${q.zh}</h2><div class="todo">${q.rows.map(r =>
+      `<a href="${itemHref(r.it.id)}">${img(r.it)}<div><div class="n">${esc(nameOf(r.it))}${r.busy ? `<span class="tag">升級中</span>` : ""}${r.locked ? `<span class="tag off">尚未解鎖</span>` : ""}</div>
         <div class="lvs">Lv ${r.from} → ${r.goal}${r.todo > 1 ? `・${r.todo} 個` : ""}</div></div>
-        <div class="t">${r.time ? fmtD(r.time) : "不需時間"}</div></a>`).join("")}</div></section>`).join("")}
+        <div class="t">${r.time ? fmtD(r.time) : r.locked ? "—" : "不需時間"}</div></a>`).join("")}</div></section>`).join("")}
     <p class="note">還沒解鎖、還沒蓋的項目從 0 級開始算。升級時間${discount ? `已套用月卡 -${discount}%，` : ""}不含加速、建築學徒和實驗室助手。英雄裝備只需要礦石，不列入。</p>
     <details class="again"><summary>重新貼上資料</summary>${box}</details>`;
 }

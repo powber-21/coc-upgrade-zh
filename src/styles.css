@@ -419,3 +419,4 @@ td:first-child .mycnt { margin-left: 6px; font-size: 12px; font-weight: 900; col
 .mynote a { color: var(--link); font-weight: 700; }
 .linkbtn.clr { flex: none; color: var(--muted); font-weight: 400; font-size: 14px; }
 .linkbtn.clr[data-armed] { color: #d1453b; font-weight: 900; }
+.todo .tag.off { background: var(--pill); color: var(--muted); }
