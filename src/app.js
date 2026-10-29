@@ -446,7 +446,7 @@ function progressView(d) {
       <button type="button" class="btn" data-paste>📋 從剪貼簿貼上</button>
       <textarea data-minein placeholder="或把匯出的資料貼在這裡" aria-label="村莊資料" rows="3"></textarea>
       <p class="note" id="minemsg" role="status"></p></div>`;
-  const head = `<div class="intro"><h1>我的升級進度</h1><p>在遊戲設定裡匯出村莊資料（會複製到剪貼簿），回到這裡貼上，就會算出目前的大本營還要多久才能升滿。資料只存在你的瀏覽器，不會上傳。</p></div>`;
+  const head = `<div class="intro"><h1>我的升級進度</h1><p>在遊戲設定裡匯出村莊資料，回到這裡貼上，就會算出目前的大本營還要多久才能升滿。</p></div>`;
   if (!d) return head + box;
   const p = progress(d);
   const when = new Date(d.timestamp * 1000);
