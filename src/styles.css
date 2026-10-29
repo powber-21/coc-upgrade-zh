@@ -351,12 +351,13 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 @media (max-width: 520px) {
   body { font-size: 16px; }
   /* 手機：版本更新、常見問題移到最上列，跟網站名稱同一列；搜尋列和目前位置各佔一列 */
-  header .wrap { grid-template-columns: auto 1fr; grid-template-areas: "brand links" "search search" "crumbs crumbs"; row-gap: 12px; }
+  header .wrap { grid-template-columns: auto 1fr; grid-template-areas: "brand links" "search search" "crumbs theme"; row-gap: 12px; }
   .top, .navrow { display: contents; }
   .brand { grid-area: brand; }
   .search { grid-area: search; }
   .navrow .crumbs { grid-area: crumbs; }
   .toplinks { grid-area: links; justify-self: end; }
+  .themebtn { grid-area: theme; justify-self: end; align-self: center; }
   .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
   .grid.heroes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .tile img, .tile .noimg { width: 64px; height: 64px; }
@@ -392,10 +393,14 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 .brand:active, .toplinks a:active, .crumbs a:active, a.nm:active, .faq a:active, footer a:active { opacity: .6; }
 
 /* 我的升級進度 */
-.cta { display: grid; gap: 2px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 2px solid var(--gold); box-shadow: 0 3px 0 var(--gold-ledge); color: var(--ink); text-decoration: none; }
+.cta { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 18px; background: var(--surface); border: 2px solid var(--line); box-shadow: 0 4px 0 var(--ledge); color: var(--ink); text-decoration: none; transition: transform .15s ease, border-color .15s ease; }
+.cta div { display: grid; gap: 2px; flex: 1; min-width: 0; }
 .cta b { font-size: 18px; font-weight: 900; }
 .cta span { color: var(--muted); font-size: 13px; }
-.cta:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-ledge); }
+.cta i { font-style: normal; font-size: 28px; font-weight: 900; line-height: 1; color: var(--muted); }
+.cta:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--ledge); }
+@media (hover: hover) { .cta:hover { border-color: var(--gold); transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { .cta { transition: none; } .cta:hover { transform: none; } }
 .paste { display: grid; gap: 10px; max-width: 560px; }
 .paste textarea { width: 100%; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 10px 12px; font: 14px/1.4 var(--font-body); resize: vertical; }
 .btn { height: 48px; border: 0; border-radius: 12px; background: var(--gold); color: #1c2128; font-family: var(--font-body); font-size: 16px; font-weight: 900; box-shadow: 0 3px 0 var(--gold-ledge); }
@@ -420,3 +425,15 @@ td:first-child .mycnt { margin-left: 6px; font-size: 12px; font-weight: 900; col
 .linkbtn.clr { flex: none; color: var(--muted); font-weight: 400; font-size: 14px; }
 .linkbtn.clr[data-armed] { color: #d1453b; font-weight: 900; }
 .todo .tag.off { background: var(--pill); color: var(--muted); }
+
+/* 淺色／深色切換按鈕：淺色時顯示月亮（按了變深色），深色時顯示太陽 */
+.themebtn { flex-shrink: 0; display: grid; place-items: center; width: 34px; height: 34px; margin-block: -4px; padding: 0; border: 0; border-radius: 10px; background: rgba(255, 255, 255, .1); color: #c9d2de; cursor: pointer; }
+.themebtn:hover { color: #fff; background: rgba(255, 255, 255, .18); }
+.themebtn:active { transform: scale(.92); }
+.themebtn .sun { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .themebtn .sun { display: block; }
+  :root:not([data-theme="light"]) .themebtn .moon { display: none; }
+}
+:root[data-theme="dark"] .themebtn .sun { display: block; }
+:root[data-theme="dark"] .themebtn .moon { display: none; }

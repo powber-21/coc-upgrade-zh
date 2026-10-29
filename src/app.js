@@ -195,7 +195,7 @@ function landingView() {
     <div class="passbar"><div class="lbl">月卡折扣</div>${passBar()}</div>
     <div class="vcards">${card("home", V.home.zh, V.home.tag, true)}${card("builder", V.builder.zh, V.builder.tag, true)}
       ${card("clan-capital", V["clan-capital"].zh, V["clan-capital"].tag)}${card("hall", "依大本營等級", "每樣東西能升到幾級")}</div>
-    <a class="cta" href="${BASE}progress/"><b>📋 我的升級進度</b><span>貼上遊戲匯出的村莊資料，算出還要多久升滿</span></a>
+    <a class="cta" href="${BASE}progress/"><div><b>📋 我的升級進度</b><span>貼上遊戲匯出的村莊資料，算出還要多久升滿</span></div><i aria-hidden="true">›</i></a>
     <section><h2 class="group">英雄</h2><div class="grid heroes">${G("home/heroes").map(it => tile(it)).join("")}</div></section>`;
 }
 
@@ -726,6 +726,13 @@ logDot();
 // 用返回鍵回到之前的頁面時，瀏覽器會直接顯示舊畫面，要再檢查一次
 window.addEventListener("pageshow", logDot);
 window.addEventListener("storage", logDot);
+// 淺色／深色切換：沒按過就跟著系統設定，按過就記住（頁面最前面的小程式會先套用，避免閃一下）
+$("#themebtn").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("coc-theme", root.dataset.theme); } catch (e) {}
+});
 // 頁首的高度會隨螢幕寬度改變（例如導覽列換行），分類列要貼在它下面
 const head = $("header");
 new ResizeObserver(() => document.documentElement.style.setProperty("--head-h", head.offsetHeight + "px")).observe(head);

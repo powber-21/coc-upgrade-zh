@@ -29,6 +29,8 @@ __LDJSON__
 <meta name="theme-color" content="#1e2938">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<!-- 使用者選過淺色／深色就先套用，畫面才不會閃一下另一種顏色 -->
+<script>try { var t = localStorage.getItem("coc-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <link rel="stylesheet" href="__BASE__styles.css?v=__VER__">
 </head>
 <body>
@@ -46,6 +48,10 @@ __LDJSON__
     <div class="navrow">
       <nav class="crumbs" id="crumbs" aria-label="目前位置">__CRUMBS__</nav>
       <nav class="toplinks" aria-label="網站資訊"><a href="__BASE__updates/" id="loglink">版本更新</a><a href="__BASE__faq/">常見問題</a></nav>
+      <button type="button" class="themebtn" id="themebtn" aria-label="切換淺色／深色">
+        <svg class="moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+        <svg class="sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"></circle><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"></path></svg>
+      </button>
     </div>
   </div>
 </header>
