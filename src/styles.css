@@ -390,3 +390,32 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 .chip:active { transform: translateY(2px); box-shadow: 0 0 0 var(--ledge); }
 .log .day > summary:active { background: color-mix(in srgb, var(--ink) 10%, var(--surface)); }
 .brand:active, .toplinks a:active, .crumbs a:active, a.nm:active, .faq a:active, footer a:active { opacity: .6; }
+
+/* 我的升級進度 */
+.cta { display: grid; gap: 2px; padding: 14px 16px; border-radius: 16px; background: var(--surface); border: 2px solid var(--gold); box-shadow: 0 3px 0 var(--gold-ledge); color: var(--ink); text-decoration: none; }
+.cta b { font-size: 18px; font-weight: 900; }
+.cta span { color: var(--muted); font-size: 13px; }
+.cta:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-ledge); }
+.paste { display: grid; gap: 10px; max-width: 560px; }
+.paste textarea { width: 100%; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 10px 12px; font: 14px/1.4 var(--font-body); resize: vertical; }
+.btn { height: 48px; border: 0; border-radius: 12px; background: var(--gold); color: #1c2128; font-family: var(--font-body); font-size: 16px; font-weight: 900; box-shadow: 0 3px 0 var(--gold-ledge); }
+.btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-ledge); }
+.panel .say.err { color: #d1453b; font-weight: 700; }
+.qsum { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.qsum .panel { gap: 6px; max-width: none; }
+.qsum .big { font-size: 26px; font-weight: 900; line-height: 1.2; }
+.todo { display: grid; gap: 8px; }
+.todo a { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 12px; background: var(--surface); border: 2px solid var(--line); color: var(--ink); text-decoration: none; }
+.todo a:active { opacity: .7; }
+.todo img, .todo .noimg { width: 44px; height: 44px; object-fit: contain; }
+.todo .n { font-weight: 700; line-height: 1.25; }
+.todo .lvs { font-size: 13px; color: var(--muted); }
+.todo .t { font-weight: 900; white-space: nowrap; text-align: right; }
+.todo .tag { margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--gold); color: #1c2128; font-size: 11px; font-weight: 900; vertical-align: 2px; }
+.again summary { cursor: pointer; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
+.linkbtn { border: 0; padding: 0; background: none; color: var(--link); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+td:first-child .mycnt { margin-left: 6px; font-size: 12px; font-weight: 900; color: var(--mine); white-space: nowrap; }
+.mynote b { color: var(--ink); }
+.mynote a { color: var(--link); font-weight: 700; }
+.linkbtn.clr { flex: none; color: var(--muted); font-weight: 400; font-size: 14px; }
+.linkbtn.clr[data-armed] { color: #d1453b; font-weight: 900; }

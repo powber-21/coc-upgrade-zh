@@ -195,6 +195,7 @@ function landingView() {
     <div class="passbar"><div class="lbl">月卡折扣</div>${passBar()}</div>
     <div class="vcards">${card("home", V.home.zh, V.home.tag, true)}${card("builder", V.builder.zh, V.builder.tag, true)}
       ${card("clan-capital", V["clan-capital"].zh, V["clan-capital"].tag)}${card("hall", "依大本營等級", "每樣東西能升到幾級")}</div>
+    <a class="cta" href="${BASE}progress/"><b>📋 我的升級進度</b><span>貼上遊戲匯出的村莊資料，算出還要多久升滿</span></a>
     <section><h2 class="group">英雄</h2><div class="grid heroes">${G("home/heroes").map(it => tile(it)).join("")}</div></section>`;
 }
 
@@ -220,6 +221,13 @@ function hallHref() {
   const base = state.hallBase === "builder" ? "builder" : "home", max = hallMaxOf(base);
   return `${BASE}${hallPage(base, state.hall && state.hall <= max ? state.hall : max)}/`;
 }
+// 大本營 h 級時這個項目可以有幾個（沒有數量限制的項目回傳 null）
+function countAt(it, h) {
+  if (!it.count) return null;
+  let best = null;
+  for (const [k, c] of Object.entries(it.count)) if (+k <= h) best = c;
+  return best;
+}
 const HALL_M = PAGE_ITEM.match(/^(th|bh)(\d+)$/);
 let hallCur = HALL_M ? { base: HALL_M[1] === "th" ? "home" : "builder", h: +HALL_M[2] } : null;
 if (hallCur) { state.hallBase = hallCur.base; state.hall = hallCur.h; save(); }
@@ -240,12 +248,6 @@ function hallView(base, h) {
   const hallId = base === "home" ? "home-town-hall" : "builder-builder-hall";
   const max = hallMaxOf(base);
   const hallName = base === "home" ? "大本營" : "建築大師大本營";
-  const countAt = it => {
-    if (!it.count) return null;
-    let best = null;
-    for (const [k, c] of Object.entries(it.count)) if (+k <= h) best = c;
-    return best;
-  };
   const sections = VILLAGES[base].tabs.flatMap(([, , fn]) => fn())
     .map(s => sec(s.title, s.items.filter(it => it.hallMax && it.id !== hallId))).filter(s => s.items.length);
   return `<div class="intro"><h1>${base === "home" ? "大本營" : "建築大師"}${h}本升級數據</h1></div>
@@ -254,7 +256,7 @@ function hallView(base, h) {
     <div class="hallpick"><span class="lbl">${hallName}</span>${Array.from({ length: max }, (_, i) => `<button class="chip" data-h="${i + 1}" aria-pressed="${i + 1 === h}">${i + 1}</button>`).join("")}</div>
     <p class="note">每個項目在${hallName}${h}級時能升到的最高等級，以及可擁有數量（×）。灰色代表此等級尚未解鎖。</p>
     ${sections.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {
-      const lv = it.hallMax[h - 1], n = countAt(it);
+      const lv = it.hallMax[h - 1], n = countAt(it, h);
       return tile(it, `<div class="lv">${lv ? "Lv " + lv : "—"}${n ? ` <span style="font-size:12px">×${n}</span>` : ""}</div>`, !lv);
     }).join("")}</div></section>`).join("")}`;
 }
@@ -308,14 +310,17 @@ function itemView(it) {
   const calc = calcPanel(it, top, myMax, hm ? `${hallName}${my}` : "");
   // 英雄頁輸入過「英雄等級」的話，主表格裡那一級亮起來
   const mainT = it.tables.find(x => !x.extra), myLv = calc ? state.lv[it.id] : undefined;
+  // 其他項目：貼過村莊資料的話，自己擁有的等級全部亮起來（英雄用上面的「英雄等級」）
+  const mineLv = calc ? null : myLevels(it);
+  const isMine = (t, l) => t === mainT && (l === myLv || !!(mineLv && mineLv[l]));
   const trAttr = (t, r) => {
-    const cls = [!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax && "above", t === mainT && r[0] === myLv && "mine"].filter(Boolean).join(" ");
+    const cls = [!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax && "above", isMine(t, r[0]) && "mine"].filter(Boolean).join(" ");
     return `${cls ? ` class="${cls}"` : ""}${t === mainT && typeof r[0] === "number" ? ` data-lv="${r[0]}"` : ""}`;
   };
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="${esc(t.title || "")}" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${trAttr(t, r)}><td>${lvCell(r[0])}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <tbody>${t.rows.map(r => `<tr${trAttr(t, r)}><td>${lvCell(r[0])}${t === mainT && mineLv && mineLv[r[0]] > 1 ? `<span class="mycnt">×${mineLv[r[0]]}</span>` : ""}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>
@@ -324,6 +329,7 @@ function itemView(it) {
     ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))} ›</a>`).join("")}</div>` : ""}
     ${attrHtml}
     ${calc ? `<div class="panels">${panel}${calc}</div>` : panel}
+    ${mineLv ? `<p class="note mynote">我的等級：${Object.entries(mineLv).map(([l, n]) => `<b>Lv ${l}</b>${n > 1 ? ` ×${n}` : ""}`).join("、")}（${mineDate(mine)} 匯出，來自<a href="${BASE}progress/">我的升級進度</a>，表中綠色的列）</p>` : ""}
     ${tables}`;
 }
 
@@ -347,6 +353,127 @@ function calcOut(it, t, ti, cur, goal, hallText) {
     <div class="sum">⏱ ${fmtT(time)}</div>${discount ? `<div class="say">已套用月卡 -${discount}%。</div>` : ""}`;
 }
 
+// 我的升級進度：貼上遊戲匯出的村莊資料（JSON），算出每個工作隊列還要多久才能把目前的大本營升滿
+// 資料只存在使用者自己的瀏覽器（localStorage），不會上傳
+const QUEUES = [
+  ["builder", "建築工人", ["home/defenses", "home/traps", "home/walls", "home/resource-buildings", "home/army-buildings", "home/other", "home/guardians", "home/heroes"]],
+  ["lab", "實驗室", ["home/troops", "home/spells", "home/siege-machines"]],
+  ["pet", "戰寵小屋", ["home/pets"]],
+];
+const BY_DID = {};
+for (const it of Object.values(DATA.items)) if (it.did && it.base === "home" && it.group !== "home/super-troops") BY_DID[it.did] = it;
+// 匯出資料裡有等級的分類；buildings 裡的工藝站（types）沒有等級，對不到項目會自動略過
+const MINE_KEYS = ["buildings", "traps", "units", "siege_machines", "heroes", "spells", "pets", "guardians"];
+
+let mine = null;
+try { mine = JSON.parse(localStorage.getItem("coc-mine") || "null"); } catch (e) {}
+function setMine(text) {
+  let d;
+  try { d = JSON.parse(text.trim()); } catch (e) { return false; }
+  if (!d || !Array.isArray(d.buildings) || !d.timestamp) return false;
+  mine = d;
+  try { localStorage.setItem("coc-mine", JSON.stringify(d)); } catch (e) {}
+  // 順便記下大本營等級和英雄等級，瀏覽項目頁時直接用
+  const hall = (key, id) => (d[key] || []).find(e => e.data === DATA.items[id].did);
+  for (const [key, id, base] of [["buildings", "home-town-hall", "home"], ["buildings2", "builder-builder-hall", "builder"]]) {
+    const h = hall(key, id);
+    if (h && h.lvl) state.my[base] = h.lvl;
+  }
+  for (const e of [...(d.heroes || []), ...(d.heroes2 || [])]) {
+    const it = Object.values(DATA.items).find(i => i.did === e.data && i.group.endsWith("/heroes"));
+    if (it && e.lvl) state.lv[it.id] = e.lvl;
+  }
+  save();
+  return true;
+}
+
+function progress(d) {
+  // 每個項目的每一座建築：{ lv, left }，left 是正在升級的那一級還剩幾秒
+  const have = {};
+  const passed = Math.max(0, Date.now() / 1000 - d.timestamp);
+  for (const k of MINE_KEYS)
+    for (const e of d[k] || []) {
+      const it = BY_DID[e.data];
+      if (!it || e.lvl === undefined) continue;
+      const list = have[it.id] ||= [];
+      for (let i = 0; i < (e.cnt || 1); i++) list.push({ lv: e.lvl, left: e.timer !== undefined ? Math.max(0, e.timer - passed) : null });
+    }
+  const th = (have["home-town-hall"] || [{ lv: 1 }])[0].lv;
+  // 工人數：建築工人小屋的數量，蓋了 B.O.B 小屋再多一位；使用者可以在頁面上自己調整
+  const huts = ((have["home-builders-hut"] || []).length || 1) + ((have["home-bobs-hut"] || []).some(b => b.lv > 0) ? 1 : 0);
+  const workers = state.builders || huts;
+  const queues = QUEUES.map(([key, zh, groups]) => {
+    const rows = [];
+    for (const g of groups) for (const id of (DATA.groups.find(x => x.key === g) || { items: [] }).items) {
+      const it = DATA.items[id], goal = it.hallMax ? it.hallMax[th - 1] : 0;
+      if (!goal) continue;
+      const t = it.tables.find(x => !x.extra), ti = t.cols.findIndex(c => /^(build|upgrade|research)Time$/.test(c)) + 1;
+      const secs = {};
+      for (const r of t.rows) if (typeof r[0] === "number") secs[r[0]] = ti && r[ti] ? offT(r[ti].t) : 0;
+      // 還沒蓋的（數量不足）、還沒解鎖的（匯出資料裡沒有）都當成 0 級
+      const list = [...(have[id] || [])];
+      while (list.length < (countAt(it, th) ?? 1)) list.push({ lv: 0, left: null });
+      let time = 0, todo = 0, busy = false;
+      for (const b of list) {
+        if (b.lv >= goal) continue;
+        todo++;
+        if (b.left !== null) busy = true;
+        for (let l = b.lv + 1; l <= goal; l++) time += l === b.lv + 1 && b.left !== null ? b.left : secs[l] || 0;
+      }
+      if (todo) rows.push({ it, from: Math.min(...list.map(b => b.lv)), goal, todo, time, busy });
+    }
+    rows.sort((a, b) => b.time - a.time);
+    const total = rows.reduce((a, r) => a + r.time, 0);
+    return { key, zh, rows, total, est: key === "builder" ? total / workers : total };
+  });
+  return { th, huts, workers, passed, queues };
+}
+
+const MAX_BUILDERS = 8;
+const mineDate = d => { const w = new Date(d.timestamp * 1000); return `${w.getMonth() + 1}/${w.getDate()}`; };
+// 我的等級：從匯出資料找出這個項目每一級有幾個（例如箭塔 {4: 1, 6: 4, 8: 2, 10: 1}）
+function myLevels(it) {
+  if (!mine || !it.did || it.group.endsWith("super-troops")) return null;
+  const keys = it.base === "builder" ? ["buildings2", "traps2", "units2", "heroes2"] : it.base === "home" ? MINE_KEYS : [];
+  const out = {};
+  for (const k of keys) for (const e of mine[k] || []) if (e.data === it.did && e.lvl) out[e.lvl] = (out[e.lvl] || 0) + (e.cnt || 1);
+  return Object.keys(out).length ? out : null;
+}
+const fmtD = s => s >= 86400 ? `${+(s / 86400).toFixed(1)}天` : fmtT(s);
+function progressView(d) {
+  crumbs([["我的升級進度"]]);
+  const box = `<div class="paste">
+      <button type="button" class="btn" data-paste>📋 從剪貼簿貼上</button>
+      <textarea data-minein placeholder="或把匯出的資料貼在這裡" aria-label="村莊資料" rows="3"></textarea>
+      <p class="note" id="minemsg" role="status"></p></div>`;
+  const head = `<div class="intro"><h1>我的升級進度</h1><p>在遊戲設定裡匯出村莊資料（會複製到剪貼簿），回到這裡貼上，就會算出目前的大本營還要多久才能升滿。資料只存在你的瀏覽器，不會上傳。</p></div>`;
+  if (!d) return head + box;
+  const p = progress(d);
+  const when = new Date(d.timestamp * 1000);
+  const old = p.passed > 3 * 86400;
+  const qs = p.queues.filter(q => q.rows.length || q.key !== "pet");
+  return head + `<div class="panel">
+      <div class="row"><div class="say">大本營<b class="hl">${p.th}</b>級・${esc(d.tag || "")}・匯出於 ${mineDate(d)} ${String(when.getHours()).padStart(2, "0")}:${String(when.getMinutes()).padStart(2, "0")}</div>
+        <button type="button" class="linkbtn clr" data-mineclear>清除</button></div>
+      ${old ? `<div class="say err">資料是 ${Math.floor(p.passed / 86400)} 天前匯出的，建議重新匯出一次。</div>` : ""}
+      <hr><div class="row"><span class="lbl">建築工人</span><div class="step">
+        <button type="button" data-bld="-1" aria-label="少一位工人"${p.workers <= 1 ? " disabled" : ""}>−</button>
+        <select class="n" data-bldset aria-label="選擇建築工人數量">${Array.from({ length: MAX_BUILDERS }, (_, i) => `<option value="${i + 1}"${i + 1 === p.workers ? " selected" : ""}>${i + 1}</option>`).join("")}</select>
+        <button type="button" data-bld="1" aria-label="多一位工人"${p.workers >= MAX_BUILDERS ? " disabled" : ""}>+</button></div></div>
+      <div class="say">${state.builders && state.builders !== p.huts ? `已改成 <b>${p.workers}</b> 位（匯出資料是 ${p.huts} 位，<button type="button" class="linkbtn" data-bldauto>改回</button>）。` : `依匯出資料是 <b>${p.huts}</b> 位。已解鎖更多工人的話，按「+」調整。`}</div>
+      <hr><div class="lbl">月卡折扣</div>${passBar()}</div>
+    <div class="qsum">${qs.map(q => `<div class="panel"><div class="lbl">${q.zh}</div>
+      ${q.total ? `<div class="big">⏱ ${fmtD(q.est)}</div>
+        <div class="say">${q.key === "builder" ? `${p.workers} 位工人同時升級的估計。全部加起來 ${fmtD(q.total)}。` : "一次只能升級一個。"}</div>`
+        : `<div class="big">✅ 已升滿</div>`}</div>`).join("")}</div>
+    ${qs.filter(q => q.rows.length).map(q => `<section><h2 class="group">${q.zh}・還沒升滿</h2><div class="todo">${q.rows.map(r =>
+      `<a href="${itemHref(r.it.id)}">${img(r.it)}<div><div class="n">${esc(nameOf(r.it))}${r.busy ? `<span class="tag">升級中</span>` : ""}</div>
+        <div class="lvs">Lv ${r.from} → ${r.goal}${r.todo > 1 ? `・${r.todo} 個` : ""}</div></div>
+        <div class="t">${r.time ? fmtD(r.time) : "不需時間"}</div></a>`).join("")}</div></section>`).join("")}
+    <p class="note">還沒解鎖、還沒蓋的項目從 0 級開始算。升級時間${discount ? `已套用月卡 -${discount}%，` : ""}不含加速、建築學徒和實驗室助手。英雄裝備只需要礦石，不列入。</p>
+    <details class="again"><summary>重新貼上資料</summary>${box}</details>`;
+}
+
 function searchView(q) {
   crumbs([["搜尋：" + q.trim()]]);
   const s = q.trim().toLowerCase();
@@ -365,6 +492,7 @@ function faqView() {
     ["多久更新一次？", "每天自動檢查一次，資料來源一更新，本站隔天就會跟著更新。"],
     ["中文名稱為什麼跟遊戲裡不一樣？", "中文名稱是對照翻譯，大部分和遊戲一致，少數可能略有不同。新推出的兵種或建築，會先顯示英文名稱。"],
     ["「我的大本營」和「月卡折扣」怎麼用？", "在兵種或建築頁按「−」「+」調成你的大本營等級，表中升不到的等級會變淡；選擇月卡折扣後，所有費用和時間會自動打折。"],
+    ["「我的升級進度」怎麼用？", `在遊戲設定裡匯出村莊資料（會複製到剪貼簿），打開<a href="${BASE}progress/">我的升級進度</a>按「從剪貼簿貼上」，就會列出目前的大本營還有哪些東西沒升滿，以及建築工人、實驗室還要多久。資料只存在你的瀏覽器，不會上傳。`],
     ["可以像 App 一樣使用嗎？", "可以。iPhone 用 Safari 打開本站，按「分享」→「加入主畫面」，之後從主畫面打開就是全螢幕，跟 App 一樣。Android 用 Chrome 打開，按右上角選單 →「加到主畫面」。"],
     ["需要付費或登入嗎？", "不用。完全免費，不需要帳號。"],
     ["這是官方網站嗎？", "不是。本站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href=\"https://www.supercell.com/fan-content-policy\" target=\"_blank\" rel=\"noopener\">www.supercell.com/fan-content-policy</a>."],
@@ -452,6 +580,7 @@ function render() {
   if (PAGE_ITEM === "faq") { v.innerHTML = faqView() + footer(); return; }
   if (PAGE_ITEM === "updates") { v.innerHTML = updatesView() + footer(); return; }
   if (PAGE_ITEM === "licenses") { v.innerHTML = licensesView() + footer(); return; }
+  if (PAGE_ITEM === "progress") { v.innerHTML = progressView(mine) + footer(); return; }
   if (hallCur) {
     v.innerHTML = hallView(hallCur.base, hallCur.h) + footer();
     v.querySelectorAll("[data-h]").forEach(b => b.onclick = () => goHall(hallCur.base, +b.dataset.h));
@@ -481,6 +610,38 @@ $("#view").addEventListener("click", e => {
     state.my[b] = Math.max(1, Math.min(n, (state.my[b] || n) + +m.dataset.my)); save(); render();
   }
 });
+// 我的升級進度：從剪貼簿貼上、貼進輸入框、清除資料
+function mineSet(text) {
+  if (setMine(text)) { render(); window.scrollTo(0, 0); return; }
+  const msg = $("#minemsg");
+  if (msg) msg.textContent = text.trim() ? "這不是遊戲匯出的村莊資料，請重新複製一次。" : "剪貼簿是空的。";
+}
+$("#view").addEventListener("click", e => {
+  if (e.target.closest("[data-paste]")) {
+    if (!navigator.clipboard || !navigator.clipboard.readText) { $("#minemsg").textContent = "這個瀏覽器不能直接讀剪貼簿，請長按下面的框框貼上。"; return; }
+    navigator.clipboard.readText().then(mineSet, () => { $("#minemsg").textContent = "沒有取得剪貼簿權限，請長按下面的框框貼上。"; });
+  }
+  const bld = e.target.closest("[data-bld]");
+  if (bld) {
+    const cur = +$("[data-bldset]").value;
+    state.builders = Math.max(1, Math.min(MAX_BUILDERS, cur + +bld.dataset.bld)); save(); render();
+  }
+  if (e.target.closest("[data-bldauto]")) { state.builders = 0; save(); render(); }
+  const clr = e.target.closest("[data-mineclear]");
+  if (clr && !clr.dataset.armed) {
+    clr.dataset.armed = "1"; clr.textContent = "確定清除？";
+    return;
+  }
+  if (clr) {
+    mine = null;
+    try { localStorage.removeItem("coc-mine"); } catch (err) {}
+    render();
+  }
+});
+$("#view").addEventListener("input", e => {
+  const t = e.target.closest("[data-minein]");
+  if (t && t.value.trim()) mineSet(t.value);
+});
 // 版本更新頁：滑到一天的最下面，按按鈕收起來並回到那個日期
 $("#view").addEventListener("click", e => {
   const b = e.target.closest("[data-fold]");
@@ -492,6 +653,8 @@ $("#view").addEventListener("click", e => {
 $("#view").addEventListener("change", e => {
   const s = e.target.closest("[data-myset]");
   if (s) { state.my[s.dataset.b] = +s.value; save(); render(); }
+  const b = e.target.closest("[data-bldset]");
+  if (b) { state.builders = +b.value; save(); render(); }
 });
 // 輸入英雄等級：邊打字邊更新結果，只換掉結果那一塊，輸入框才不會失去焦點
 $("#view").addEventListener("input", e => {

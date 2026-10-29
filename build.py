@@ -321,6 +321,7 @@ def sub_tables(d):
 def make_item(d, base, gkey, uid):
     item = {
         "id": uid,
+        "did": d.get("dataId"),  # 遊戲內的編號，「我的升級進度」用它對應匯出的村莊資料
         "en": d["name"],
         "zh": ZH_NAMES.get(f"{base}/{d['name']}") or ZH_NAMES.get(d["name"]),
         "base": base,
@@ -622,6 +623,7 @@ if (BASE) {
   out.faq = { view: faqView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.updates = { view: updatesView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.licenses = { view: licensesView() + footer(), crumbs: $("#crumbs").innerHTML };
+  out.progress = { view: progressView(null) + footer(), crumbs: $("#crumbs").innerHTML };
   for (const base of ["home", "builder"])
     for (let h = 1; h <= hallMaxOf(base); h++)
       out[hallPage(base, h)] = { view: hallView(base, h) + footer(), crumbs: $("#crumbs").innerHTML, title: hallTitle(base, h) };
@@ -744,6 +746,9 @@ def write_site(data):
     page("updates/", "../", "updates", "版本更新｜部落衝突數據",
          "部落衝突（COC）版本更新：每次更新新增的兵種、建築、裝備，以及調整過的升級費用、時間和數值。", "")
 
+    page("progress/", "../", "progress", "我的升級進度｜部落衝突數據",
+         "貼上部落衝突遊戲匯出的村莊資料，算出建築工人、實驗室還要多久才能把目前的大本營升滿。", "")
+
     page("licenses/", "../", "licenses", "授權條文｜部落衝突數據",
          "部落衝突數據網站使用的資料來源與授權條文。", "")
 
@@ -761,7 +766,7 @@ def write_site(data):
 
     make_share_images()
     make_card_art()
-    write_seo_files(list(items) + ["faq", "updates"] + halls)
+    write_seo_files(list(items) + ["faq", "updates", "progress"] + halls)
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 
