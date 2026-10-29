@@ -559,18 +559,13 @@ function updatesView() {
 // 最近一次資料更新在 3 天內、而且使用者還沒看過，「版本更新」連結旁顯示紅點
 const logRecent = () => DATA.log && DATA.log.length && Date.now() - new Date(DATA.log[0].date + "T00:00:00+08:00") < 3 * 86400e3;
 
-// 回報問題：Google 表單（url 還沒填的話頁尾不顯示連結）。entry 是「哪一頁」欄位的編號（預先填入的連結裡 entry.後面的數字），有填就自動帶入目前的網址
-const REPORT = { url: "", entry: "" };
-function reportHref() {
-  if (!REPORT.url || !REPORT.entry) return REPORT.url || "#";
-  return `${REPORT.url}?usp=pp_url&entry.${REPORT.entry}=${encodeURIComponent(location.href)}`;
-}
-const reportLink = text => `<a href="${esc(REPORT.url || "#")}" target="_blank" rel="noopener" data-report>${text}</a>`;
+// 回報問題：Google 表單
+const REPORT_URL = "https://forms.gle/DKepszRsQmkoXAE79";
 
 function footer() {
   return `<footer><p><b>資料最後更新：${esc(DATA.updated || "")}</b></p>
     <p>資料來源：<a href="https://github.com/chiefpansancolt/clash-of-clans-data" target="_blank" rel="noopener">clash-of-clans-data</a>，© 2026 Christopher Pezza，依 MIT 授權使用（<a href="${BASE}licenses/">授權條文</a>）。中文名稱為對照翻譯，可能與遊戲內略有不同。</p>
-    <p><a href="${BASE}updates/">版本更新</a>　<a href="${BASE}faq/">常見問題</a>${REPORT.url ? "　" + reportLink("回報問題") : ""}</p>
+    <p><a href="${BASE}updates/">版本更新</a>　<a href="${BASE}faq/">常見問題</a>　<a href="${REPORT_URL}" target="_blank" rel="noopener">回報問題</a></p>
     <p>本網站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href="https://www.supercell.com/fan-content-policy" target="_blank" rel="noopener">www.supercell.com/fan-content-policy</a>.</p></footer>`;
 }
 
@@ -649,11 +644,6 @@ $("#view").addEventListener("click", e => {
 $("#view").addEventListener("input", e => {
   const t = e.target.closest("[data-minein]");
   if (t && t.value.trim()) mineSet(t.value);
-});
-// 回報問題：按下去的時候才算出網址，表單的「哪一頁」會帶入使用者正在看的頁面
-document.addEventListener("click", e => {
-  const a = e.target.closest("[data-report]");
-  if (a) a.href = reportHref();
 });
 // 版本更新頁：滑到一天的最下面，按按鈕收起來並回到那個日期
 $("#view").addEventListener("click", e => {
