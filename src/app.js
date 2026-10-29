@@ -733,6 +733,15 @@ $("#themebtn").addEventListener("click", () => {
   root.dataset.theme = dark ? "light" : "dark";
   try { localStorage.setItem("coc-theme", root.dataset.theme); } catch (e) {}
 });
+// 按返回鍵時瀏覽器會直接拿出舊畫面（連當時的顏色），要重新套用目前的選擇；另一個分頁切換時也跟著變
+function applyTheme() {
+  try {
+    const t = localStorage.getItem("coc-theme");
+    if (t) document.documentElement.dataset.theme = t;
+  } catch (e) {}
+}
+window.addEventListener("pageshow", applyTheme);
+window.addEventListener("storage", e => { if (e.key === "coc-theme") applyTheme(); });
 // 頁首的高度會隨螢幕寬度改變（例如導覽列換行），分類列要貼在它下面
 const head = $("header");
 new ResizeObserver(() => document.documentElement.style.setProperty("--head-h", head.offsetHeight + "px")).observe(head);
