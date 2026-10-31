@@ -320,7 +320,7 @@ function itemView(it) {
   const tables = it.tables.map(t => `<section class="tbl">
     <h3>${t.img ? `<img class="ti" src="${BASE}${t.img}" alt="${esc(t.title || "")}" loading="lazy">` : ""}${esc(t.title || "升級數據")}${discount && used.length && t.rows.some(r => r.some(v => v && typeof v === "object" && ("c" in v || "t" in v))) ? `<span class="disc dnote">(已套用月卡 -${discount}%)</span>` : ""}</h3>${t.sub ? `<p class="sub">${esc(t.sub)}</p>` : ""}
     <div class="scroll"><table><thead><tr><th>${esc(t.head || "等級")}</th>${t.cols.map(c => `<th>${esc(label(c))}</th>`).join("")}</tr></thead>
-    <tbody>${t.rows.map(r => `<tr${trAttr(t, r)}><td>${lvCell(r[0])}${t === mainT && mineLv && mineLv[r[0]] > 1 ? `<span class="mycnt">×${mineLv[r[0]]}</span>` : ""}</td>${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
+    <tbody>${t.rows.map(r => `<tr${trAttr(t, r)}>${t === mainT && mineLv && mineLv[r[0]] > 1 ? `<td class="cnt">${lvCell(r[0])}<span class="mycnt">×${mineLv[r[0]]}</span></td>` : `<td>${lvCell(r[0])}</td>`}${t.cols.map((c, i) => `<td>${cell(r[i + 1], c, it.base)}</td>`).join("")}</tr>`).join("")}</tbody></table></div></section>`).join("");
   return `<div class="hero band"><div class="pic">${img(it)}</div>
       <div class="who"><div class="crumb">${esc(cfg ? cfg.zh : "")}${where ? "・" + esc(where.sec) : ""}</div>
       <h1>${esc(nameOf(it))}</h1>${it.zh ? `<div class="en">${esc(it.en)}</div>` : ""}</div>
@@ -675,14 +675,15 @@ $("#view").addEventListener("input", e => {
 });
 // 亮起來的那一列要等使用者滑到、出現在畫面上，才閃一下、彈一下（等級很高時一開始看不到那一列）
 let mineObs;
+// 亮起來的列有好幾列（例如加農砲 4 座在不同等級）時，每一列各自在出現時彈一下
 function watchMine() {
   if (mineObs) mineObs.disconnect();
-  const tr = $("tr.mine");
-  if (!tr || !("IntersectionObserver" in window)) return;
+  const trs = document.querySelectorAll("tr.mine");
+  if (!trs.length || !("IntersectionObserver" in window)) return;
   mineObs = new IntersectionObserver(es => {
-    if (es.some(e => e.isIntersecting)) { tr.classList.add("seen"); mineObs.disconnect(); }
+    for (const e of es) if (e.isIntersecting) { e.target.parentElement.classList.add("seen"); mineObs.unobserve(e.target); }
   }, { threshold: 0.9, rootMargin: `-${$("header").offsetHeight}px 0px 0px 0px` });  // 被固定的頁首蓋住的部分不算看得到
-  mineObs.observe(tr.firstElementChild);  // 看第一格（等級）：表格可以左右滑，整列常常有一部分在畫面外
+  for (const tr of trs) mineObs.observe(tr.firstElementChild);  // 看第一格（等級）：表格可以左右滑，整列常常有一部分在畫面外
 }
 // iPad 點輸入框以外的地方不會自己收鍵盤：點到別處時主動離開輸入框
 document.addEventListener("pointerdown", e => {

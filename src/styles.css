@@ -419,7 +419,9 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 .todo .tag { margin-left: 6px; padding: 1px 6px; border-radius: 6px; background: var(--gold); color: #1c2128; font-size: 11px; font-weight: 900; vertical-align: 2px; }
 .again summary { cursor: pointer; font-weight: 700; color: var(--muted); margin-bottom: 10px; }
 .linkbtn { border: 0; padding: 0; background: none; color: var(--link); font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
-td:first-child .mycnt { margin-left: 6px; font-size: 12px; font-weight: 900; color: var(--mine); white-space: nowrap; }
+/* ×4 放在格子右邊、不佔位置，等級標號才會跟其他列一樣置中；兩邊留同樣的空間避免重疊 */
+td:first-child.cnt { padding-inline: 34px; }
+td:first-child .mycnt { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 12px; font-weight: 900; color: var(--mine); white-space: nowrap; }
 .mynote b { color: var(--ink); }
 .mynote a { color: var(--link); font-weight: 700; }
 .linkbtn.clr { flex: none; color: var(--muted); font-weight: 400; font-size: 14px; }
