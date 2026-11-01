@@ -478,12 +478,16 @@ def make_share_images():
     x = (og.width - 1200) // 2
     og.crop((x, 0, x + 1200, 630)).save(os.path.join(OUT, "og.png"), optimize=True)
 
-    icon = _gradient(180, 180, (255, 214, 102), (214, 140, 20)).convert("RGBA")
-    _paste(icon, th, 150, 90, 168)
-    icon.convert("RGB").save(os.path.join(OUT, "apple-touch-icon.png"), optimize=True)
-    icon.resize((32, 32), Image.LANCZOS).convert("RGB").save(os.path.join(OUT, "favicon-32.png"), optimize=True)
-    # Google 搜尋結果的網站圖示要 48px 的倍數
-    icon.resize((192, 192), Image.LANCZOS).convert("RGB").save(os.path.join(OUT, "favicon-192.png"), optimize=True)
+    # 先畫一張大的再縮小，每個尺寸都清楚（比例跟原本 180px 的版本一樣）
+    S = 576
+    icon = _gradient(S, S, (255, 214, 102), (214, 140, 20)).convert("RGBA")
+    _paste(icon, th, S * 150 // 180, S // 2, S * 168 // 180)
+    icon = icon.convert("RGB")
+    icon.resize((180, 180), Image.LANCZOS).save(os.path.join(OUT, "apple-touch-icon.png"), optimize=True)
+    # Google 搜尋結果的網站圖示要是 48px 的倍數，所以用 48 和 192；favicon.ico 給直接抓網站根目錄的搜尋引擎
+    icon.resize((48, 48), Image.LANCZOS).save(os.path.join(OUT, "favicon-48.png"), optimize=True)
+    icon.resize((192, 192), Image.LANCZOS).save(os.path.join(OUT, "favicon-192.png"), optimize=True)
+    icon.save(os.path.join(OUT, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48)])
 
 
 def data_date():
