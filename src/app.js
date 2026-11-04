@@ -477,7 +477,7 @@ function progressView(d) {
 
 // 玩家查詢：輸入玩家標籤，經過 Cloudflare Worker（藏 API 金鑰）向 Supercell 官方 API 讀取英雄、裝備、兵種、法術的等級
 // 官方 API 沒有建築資料；標籤和查到的資料只存在使用者自己的瀏覽器（localStorage），下次打開自動重新查詢
-const PLAYER_API = "https://coc-player.johnsys1190.workers.dev";
+const PLAYER_API = "https://api.cocdata.app";
 const PLAYER_GROUPS = ["home/heroes", "home/hero-equipment", "home/pets", "home/troops", "home/siege-machines", "home/spells", "builder/heroes", "builder/troops"];
 // API 用英文名稱 + 村莊（home / builderBase）對應項目；超級兵種沒有自己的等級（跟著原兵種），不在這些分類裡
 const BY_EN = {};
