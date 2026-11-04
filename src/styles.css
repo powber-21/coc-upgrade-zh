@@ -403,6 +403,12 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 @media (prefers-reduced-motion: reduce) { .cta { transition: none; } .cta:hover { transform: none; } }
 .paste { display: grid; gap: 10px; max-width: 560px; }
 .paste textarea { width: 100%; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 10px 12px; font: 14px/1.4 var(--font-body); resize: vertical; }
+.prow { display: flex; gap: 8px; }
+.ptag { flex: 1; min-width: 0; height: 48px; border: 2px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--ink); padding: 0 12px; font: 18px var(--font-body); }
+.ptag:focus { border-color: var(--gold); outline: none; }
+.prow .btn { padding: 0 22px; }
+.tile .lv small { font-family: var(--font-body); font-size: 12px; color: var(--muted); }
+.tile .lv.done { color: var(--mine); }
 .btn { height: 48px; border: 0; border-radius: 12px; background: var(--gold); color: #1c2128; font-family: var(--font-body); font-size: 16px; font-weight: 900; box-shadow: 0 3px 0 var(--gold-ledge); }
 .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-ledge); }
 .panel .say.err { color: #d1453b; font-weight: 700; }

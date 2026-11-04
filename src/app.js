@@ -196,6 +196,7 @@ function landingView() {
     <div class="vcards">${card("home", V.home.zh, V.home.tag, true)}${card("builder", V.builder.zh, V.builder.tag, true)}
       ${card("clan-capital", V["clan-capital"].zh, V["clan-capital"].tag)}${card("hall", "依大本營等級", "每樣東西能升到幾級")}</div>
     <a class="cta" href="${BASE}progress/"><div><b>📋 我的升級進度</b><span>貼上遊戲匯出的村莊資料，算出還要多久升滿</span></div><i aria-hidden="true">›</i></a>
+    <a class="cta" href="${BASE}player/"><div><b>🔍 玩家查詢</b><span>輸入玩家標籤，自動讀取英雄、裝備、兵種、法術等級</span></div><i aria-hidden="true">›</i></a>
     <section><h2 class="group">英雄</h2><div class="grid heroes">${G("home/heroes").map(it => tile(it)).join("")}</div></section>`;
 }
 
@@ -310,8 +311,8 @@ function itemView(it) {
   const calc = calcPanel(it, top, myMax, hm ? `${hallName}${my}` : "");
   // 英雄頁輸入過「英雄等級」的話，主表格裡那一級亮起來
   const mainT = it.tables.find(x => !x.extra), myLv = calc ? state.lv[it.id] : undefined;
-  // 其他項目：貼過村莊資料的話，自己擁有的等級全部亮起來（英雄用上面的「英雄等級」）
-  const mineLv = calc ? null : myLevels(it);
+  // 其他項目：貼過村莊資料或查過玩家的話，自己擁有的等級全部亮起來（英雄用上面的「英雄等級」）
+  const own = calc ? null : ownLevels(it), mineLv = own && own.lv;
   const isMine = (t, l) => t === mainT && (l === myLv || !!(mineLv && mineLv[l]));
   const trAttr = (t, r) => {
     const cls = [!t.extra && (typeof r[0] === "number" ? r[0] : top) > myMax && "above", isMine(t, r[0]) && "mine"].filter(Boolean).join(" ");
@@ -329,7 +330,7 @@ function itemView(it) {
     ${rel.length ? `<div class="links">${rel.map(r => `<a href="${itemHref(r.id)}">${img(r)}${esc(nameOf(r))} ›</a>`).join("")}</div>` : ""}
     ${attrHtml}
     ${calc ? `<div class="panels">${panel}${calc}</div>` : panel}
-    ${mineLv ? `<p class="note mynote">我的等級：${Object.entries(mineLv).map(([l, n]) => `<b>Lv ${l}</b>${n > 1 ? ` ×${n}` : ""}`).join("、")}（${mineDate(mine)} 匯出，來自<a href="${BASE}progress/">我的升級進度</a>，表中綠色的列）</p>` : ""}
+    ${mineLv ? `<p class="note mynote">我的等級：${Object.entries(mineLv).map(([l, n]) => `<b>Lv ${l}</b>${n > 1 ? ` ×${n}` : ""}`).join("、")}（${own.note}，表中綠色的列）</p>` : ""}
     ${tables}`;
 }
 
@@ -474,6 +475,88 @@ function progressView(d) {
     <details class="again"><summary>重新貼上資料</summary>${box}</details>`;
 }
 
+// 玩家查詢：輸入玩家標籤，經過 Cloudflare Worker（藏 API 金鑰）向 Supercell 官方 API 讀取英雄、裝備、兵種、法術的等級
+// 官方 API 沒有建築資料；標籤和查到的資料只存在使用者自己的瀏覽器（localStorage），下次打開自動重新查詢
+const PLAYER_API = "https://coc-player.johnsys1190.workers.dev";
+const PLAYER_GROUPS = ["home/heroes", "home/hero-equipment", "home/pets", "home/troops", "home/siege-machines", "home/spells", "builder/heroes", "builder/troops"];
+// API 用英文名稱 + 村莊（home / builderBase）對應項目；超級兵種沒有自己的等級（跟著原兵種），不在這些分類裡
+const BY_EN = {};
+for (const g of PLAYER_GROUPS) for (const id of (DATA.groups.find(x => x.key === g) || { items: [] }).items) BY_EN[`${DATA.items[id].base}|${DATA.items[id].en}`] = DATA.items[id];
+const apiItem = x => BY_EN[`${x.village === "builderBase" ? "builder" : "home"}|${x.name}`];
+const playerAll = p => [...p.heroes, ...p.heroEquipment, ...p.troops, ...p.spells];
+const PLAYER_STALE = 5 * 60e3;  // 超過 5 分鐘的資料，打開頁面時自動重新查詢
+
+let player = null;
+try { player = JSON.parse(localStorage.getItem("coc-player") || "null"); } catch (e) {}
+const playerDate = p => { const w = new Date(p.at); return `${w.getMonth() + 1}/${w.getDate()} ${String(w.getHours()).padStart(2, "0")}:${String(w.getMinutes()).padStart(2, "0")}`; };
+// 項目頁用：這個項目在玩家查詢裡的等級（格式跟 myLevels 一樣，{ 等級: 數量 }）
+function playerLevels(it) {
+  if (!player) return null;
+  const x = playerAll(player).find(x => apiItem(x) === it);
+  return x && x.level ? { [x.level]: 1 } : null;
+}
+// 我的升級進度（JSON）和玩家查詢都有的話，用比較新的那一份
+function ownLevels(it) {
+  const a = myLevels(it), b = playerLevels(it);
+  const json = a && { lv: a, note: `${mineDate(mine)} 匯出，來自<a href="${BASE}progress/">我的升級進度</a>` };
+  const api = b && { lv: b, note: `${playerDate(player)} 查詢，來自<a href="${BASE}player/">玩家查詢</a>` };
+  return json && api ? (player.at > mine.timestamp * 1000 ? api : json) : json || api;
+}
+
+let playerBusy = false;
+async function playerFetch(tag, quiet) {
+  const msg = t => { const m = $("#pmsg"); if (m) m.textContent = t; };
+  if (playerBusy) return;
+  playerBusy = true;
+  if (!quiet) msg("查詢中…");
+  try {
+    const res = await fetch(`${PLAYER_API}/?tag=${encodeURIComponent(tag)}`);
+    const d = await res.json();
+    if (!res.ok) { msg(d.error || `查詢失敗（${res.status}）`); return; }
+    player = { ...d, at: Date.now() };
+    try { localStorage.setItem("coc-player", JSON.stringify(player)); } catch (e) {}
+    // 項目頁的「我的大本營」和英雄頁的「英雄等級」跟著更新
+    if (d.townHallLevel) state.my.home = d.townHallLevel;
+    if (d.builderHallLevel) state.my.builder = d.builderHallLevel;
+    for (const x of d.heroes) { const it = apiItem(x); if (it) state.lv[it.id] = x.level; }
+    save();
+    if (PAGE_ITEM === "player") { render(); window.scrollTo(0, 0); }
+  } catch (e) {
+    msg("連不上查詢服務，請稍後再試。");
+  } finally {
+    playerBusy = false;
+  }
+}
+
+function playerView(p) {
+  crumbs([["玩家查詢"]]);
+  const head = `<div class="intro"><h1>玩家查詢</h1><p>輸入遊戲裡的玩家標籤，自動讀取英雄、裝備、兵種、法術的等級，以及目前的大本營還能升到幾級。</p></div>`;
+  const form = msg => `<form class="paste" data-pform>
+      <div class="prow"><input class="ptag" data-ptag value="${esc(p ? p.tag : "")}" placeholder="例如 #2PYLQ8RG" aria-label="玩家標籤"
+        autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"><button type="submit" class="btn">查詢</button></div>
+      ${msg ? `<p class="note" id="pmsg" role="status"></p>` : ""}</form>`;
+  if (!p) return head + form(true) + `<p class="note">玩家標籤在遊戲裡點自己的頭像打開個人資料，名字下面那串 # 開頭的代碼。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>`;
+  const hallOf = it => it.base === "builder" ? p.builderHallLevel : p.townHallLevel;
+  const secs = PLAYER_GROUPS.map(key => {
+    const g = DATA.groups.find(x => x.key === key);
+    const lv = {};
+    for (const x of playerAll(p)) { const it = apiItem(x); if (it && it.group === key) lv[it.id] = x; }
+    const items = byHall(g.items.filter(id => lv[id]).map(id => DATA.items[id]));
+    return { title: (g.base === "builder" ? "建築大師基地・" : "") + g.zh, items, lv };
+  }).filter(s => s.items.length);
+  return head + `<div class="panel">
+      <div class="row"><div class="say"><b>${esc(p.name)}</b>・${esc(p.tag)}・大本營<b class="hl">${p.townHallLevel}</b>級${p.builderHallLevel ? `・建築大師<b>${p.builderHallLevel}</b>級` : ""}</div>
+        <button type="button" class="linkbtn clr" data-pclear>清除</button></div>
+      <div class="say">更新於 ${playerDate(p)}・<button type="button" class="linkbtn" data-prefresh>重新查詢</button></div>
+      <p class="note" id="pmsg" role="status"></p></div>
+    <p class="note">等級顯示為「目前等級 / 目前大本營的上限」，綠色代表已升滿。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>
+    ${secs.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {
+      const x = s.lv[it.id], cap = (it.hallMax && it.hallMax[hallOf(it) - 1]) || x.maxLevel;
+      return tile(it, `<div class="lv${x.level >= cap ? " done" : ""}">${x.level}<small> / ${cap}</small></div>`);
+    }).join("")}</div></section>`).join("")}
+    <details class="again"><summary>查詢其他玩家</summary>${form(false)}</details>`;
+}
+
 function searchView(q) {
   crumbs([["搜尋：" + q.trim()]]);
   const s = q.trim().toLowerCase();
@@ -493,6 +576,7 @@ function faqView() {
     ["中文名稱為什麼跟遊戲裡不一樣？", "中文名稱是對照翻譯，大部分和遊戲一致，少數可能略有不同。新推出的兵種或建築，會先顯示英文名稱。"],
     ["「我的大本營」和「月卡折扣」怎麼用？", "在兵種或建築頁按「−」「+」調成你的大本營等級，表中升不到的等級會變淡；選擇月卡折扣後，所有費用和時間會自動打折。"],
     ["「我的升級進度」怎麼用？", `在遊戲設定裡匯出村莊資料（會複製到剪貼簿），打開<a href="${BASE}progress/">我的升級進度</a>按「從剪貼簿貼上」，就會列出目前的大本營還有哪些東西沒升滿，以及建築工人、實驗室還要多久。資料只存在你的瀏覽器，不會上傳。`],
+    ["「玩家查詢」怎麼用？", `打開<a href="${BASE}player/">玩家查詢</a>，輸入遊戲裡的玩家標籤（點自己的頭像，名字下面那串 # 開頭的代碼），就會讀取英雄、裝備、兵種、法術的等級，並顯示目前的大本營還能升到幾級。資料來自 Supercell 官方 API，網站會記住你的標籤，下次打開自動更新。官方 API 沒有建築資料，建築請用「我的升級進度」。`],
     ["可以像 App 一樣使用嗎？", "可以。iPhone 用 Safari 打開本站，按「分享」→「加入主畫面」，之後從主畫面打開就是全螢幕，跟 App 一樣。Android 用 Chrome 打開，按右上角選單 →「加到主畫面」。"],
     ["需要付費或登入嗎？", "不用。完全免費，不需要帳號。"],
     ["這是官方網站嗎？", "不是。本站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href=\"https://www.supercell.com/fan-content-policy\" target=\"_blank\" rel=\"noopener\">www.supercell.com/fan-content-policy</a>."],
@@ -584,6 +668,11 @@ function render() {
   if (PAGE_ITEM === "updates") { v.innerHTML = updatesView() + footer(); return; }
   if (PAGE_ITEM === "licenses") { v.innerHTML = licensesView() + footer(); return; }
   if (PAGE_ITEM === "progress") { v.innerHTML = progressView(mine) + footer(); return; }
+  if (PAGE_ITEM === "player") {
+    v.innerHTML = playerView(player) + footer();
+    if (player && Date.now() - player.at > PLAYER_STALE) playerFetch(player.tag, true);
+    return;
+  }
   if (hallCur) {
     v.innerHTML = hallView(hallCur.base, hallCur.h) + footer();
     v.querySelectorAll("[data-h]").forEach(b => b.onclick = () => goHall(hallCur.base, +b.dataset.h));
@@ -638,6 +727,25 @@ $("#view").addEventListener("click", e => {
   if (clr) {
     mine = null;
     try { localStorage.removeItem("coc-mine"); } catch (err) {}
+    render();
+  }
+});
+// 玩家查詢：送出標籤、重新查詢、清除資料
+$("#view").addEventListener("submit", e => {
+  const f = e.target.closest("[data-pform]");
+  if (!f) return;
+  e.preventDefault();
+  const tag = $("[data-ptag]", f).value.trim();
+  $("[data-ptag]", f).blur();
+  if (tag) playerFetch(tag); else $("[data-ptag]", f).focus();
+});
+$("#view").addEventListener("click", e => {
+  if (e.target.closest("[data-prefresh]") && player) playerFetch(player.tag);
+  const clr = e.target.closest("[data-pclear]");
+  if (clr && !clr.dataset.armed) { clr.dataset.armed = "1"; clr.textContent = "確定清除？"; return; }
+  if (clr) {
+    player = null;
+    try { localStorage.removeItem("coc-player"); } catch (err) {}
     render();
   }
 });

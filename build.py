@@ -628,6 +628,7 @@ if (BASE) {
   out.updates = { view: updatesView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.licenses = { view: licensesView() + footer(), crumbs: $("#crumbs").innerHTML };
   out.progress = { view: progressView(null) + footer(), crumbs: $("#crumbs").innerHTML };
+  out.player = { view: playerView(null) + footer(), crumbs: $("#crumbs").innerHTML };
   for (const base of ["home", "builder"])
     for (let h = 1; h <= hallMaxOf(base); h++)
       out[hallPage(base, h)] = { view: hallView(base, h) + footer(), crumbs: $("#crumbs").innerHTML, title: hallTitle(base, h) };
@@ -753,6 +754,9 @@ def write_site(data):
     page("progress/", "../", "progress", "我的升級進度｜部落衝突數據",
          "貼上部落衝突遊戲匯出的村莊資料，算出建築工人、實驗室還要多久才能把目前的大本營升滿。", "")
 
+    page("player/", "../", "player", "玩家查詢｜部落衝突數據",
+         "輸入部落衝突玩家標籤，自動讀取英雄、裝備、兵種、法術的等級，以及目前的大本營還能升到幾級。", "")
+
     page("licenses/", "../", "licenses", "授權條文｜部落衝突數據",
          "部落衝突數據網站使用的資料來源與授權條文。", "")
 
@@ -770,7 +774,7 @@ def write_site(data):
 
     make_share_images()
     make_card_art()
-    write_seo_files(list(items) + ["faq", "updates", "progress"] + halls)
+    write_seo_files(list(items) + ["faq", "updates", "progress", "player"] + halls)
     print(f"items={len(items)} groups={len(groups)} data.js={len(data_js.encode()) / 1e6:.2f}MB pages={len(items) + 1}")
 
 
