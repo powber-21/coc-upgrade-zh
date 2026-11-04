@@ -503,8 +503,36 @@ function ownLevels(it) {
   return json && api ? (player.at > mine.timestamp * 1000 ? api : json) : json || api;
 }
 
+// 分享連結 player/?tag=XXXX：只是「看一下」別人的資料，放在 viewing，不存進瀏覽器，也不改使用者自己的資料
+let viewing = null;
+const linkTag = () => {
+  const t = new URLSearchParams(location.search).get("tag");
+  return t ? "#" + t.trim().toUpperCase().replace(/^#/, "").replace(/O/g, "0") : "";
+};
+// 分享的網址交給 Worker 的 /p/：LINE 等 App 的預覽會顯示玩家名稱和英雄等級，點開再跳回這一頁
+const shareUrl = p => `${PLAYER_API}/p/${encodeURIComponent(p.tag.replace(/^#/, ""))}`;
+
+// 查詢紀錄：查過的玩家（含分享連結）最多記 10 筆，最近的在最上面；點查詢欄位時列出來
+const HIST_MAX = 10;
+let hist = [];
+try { hist = JSON.parse(localStorage.getItem("coc-player-hist") || "[]"); } catch (e) {}
+function histSave() { try { localStorage.setItem("coc-player-hist", JSON.stringify(hist)); } catch (e) {} }
+function histAdd(d) {
+  hist = [{ tag: d.tag, name: d.name, th: d.townHallLevel }, ...hist.filter(h => h.tag !== d.tag)].slice(0, HIST_MAX);
+  histSave();
+}
+// 打字時只列出名稱或標籤符合的紀錄
+// 剛點進欄位時列出全部（欄位裡可能已經有上次的標籤）；打字後才篩選
+function histShow(inp) {
+  const box = inp.parentElement.querySelector(".phist");
+  const q = !inp.dataset.typed ? "" : inp.value.trim().toUpperCase().replace(/^#/, "");
+  const list = hist.filter(h => !q || h.tag.includes(q) || h.name.toUpperCase().includes(q));
+  box.innerHTML = list.map(h => `<div class="ph" role="option" data-htag="${esc(h.tag)}"><b>${esc(h.name)}</b><span>${esc(h.tag)}</span><span>${h.th}本</span>
+    <button type="button" data-hdel="${esc(h.tag)}" aria-label="刪除 ${esc(h.name)} 的紀錄">✕</button></div>`).join("");
+}
+
 let playerBusy = false;
-async function playerFetch(tag, quiet) {
+async function playerFetch(tag, quiet, view) {
   const msg = t => { const m = $("#pmsg"); if (m) m.textContent = t; };
   if (playerBusy) return;
   playerBusy = true;
@@ -513,6 +541,8 @@ async function playerFetch(tag, quiet) {
     const res = await fetch(`${PLAYER_API}/?tag=${encodeURIComponent(tag)}`);
     const d = await res.json();
     if (!res.ok) { msg(d.error || `查詢失敗（${res.status}）`); return; }
+    histAdd(d);
+    if (view) { viewing = { ...d, at: Date.now() }; render(); window.scrollTo(0, 0); return; }
     player = { ...d, at: Date.now() };
     try { localStorage.setItem("coc-player", JSON.stringify(player)); } catch (e) {}
     // 項目頁的「我的大本營」和英雄頁的「英雄等級」跟著更新
@@ -528,12 +558,14 @@ async function playerFetch(tag, quiet) {
   }
 }
 
-function playerView(p) {
+function playerView(p, want = "") {
   crumbs([["玩家查詢"]]);
+  const isView = !!p && p === viewing;
   const head = `<div class="intro"><h1>玩家查詢</h1><p>輸入遊戲裡的玩家標籤，自動讀取英雄、裝備、兵種、法術的等級，以及目前的大本營還能升到幾級。</p></div>`;
   const form = msg => `<form class="paste" data-pform>
-      <div class="prow"><input class="ptag" data-ptag value="${esc(p ? p.tag : "")}" placeholder="例如 #2PYLQ8RG" aria-label="玩家標籤"
-        autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"><button type="submit" class="btn">查詢</button></div>
+      <div class="prow"><div class="pbox"><input class="ptag" data-ptag value="${esc(p ? p.tag : want)}" placeholder="例如 #2PYLQ8RG" aria-label="玩家標籤"
+        autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"><div class="phist" role="listbox" aria-label="查詢紀錄"></div></div>
+        <button type="submit" class="btn">查詢</button></div>
       ${msg ? `<p class="note" id="pmsg" role="status"></p>` : ""}</form>`;
   if (!p) return head + form(true) + `<p class="note">玩家標籤在遊戲裡點自己的頭像打開個人資料，名字下面那串 # 開頭的代碼。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>`;
   const hallOf = it => it.base === "builder" ? p.builderHallLevel : p.townHallLevel;
@@ -544,10 +576,14 @@ function playerView(p) {
     const items = byHall(g.items.filter(id => lv[id]).map(id => DATA.items[id]));
     return { title: (g.base === "builder" ? "建築大師基地・" : "") + g.zh, items, lv };
   }).filter(s => s.items.length);
-  return head + `<div class="panel">
-      <div class="row"><div class="say"><b>${esc(p.name)}</b>・${esc(p.tag)}・大本營<b class="hl">${p.townHallLevel}</b>級${p.builderHallLevel ? `・建築大師<b>${p.builderHallLevel}</b>級` : ""}</div>
-        <button type="button" class="linkbtn clr" data-pclear>清除</button></div>
-      <div class="say">更新於 ${playerDate(p)}・<button type="button" class="linkbtn" data-prefresh>重新查詢</button></div>
+  return head + `${isView ? `<div class="viewing">👀 正在查看分享的資料・<a href="${BASE}player/">${player ? "回到我的資料" : "查詢我自己"}</a></div>` : ""}
+    <div class="panel">
+      <div class="row"><div class="pwho"><span class="xp" title="經驗等級"><img src="${BASE}xp.webp" alt="經驗等級"><b>${p.expLevel}</b></span>
+        <div><b class="pname">${esc(p.name)}</b><span class="pid">${esc(p.tag)}</span></div></div>
+        ${isView ? "" : `<button type="button" class="linkbtn clr" data-pclear>清除</button>`}</div>
+      <div class="say">大本營<b class="hl">${p.townHallLevel}</b>級${p.builderHallLevel ? `・建築大師<b>${p.builderHallLevel}</b>級` : ""}</div>
+      <div class="row"><div class="say">更新於 ${playerDate(p)}・<button type="button" class="linkbtn" data-prefresh="${isView ? "view" : ""}">重新查詢</button></div>
+        <button type="button" class="btn pshare" data-pshare="${esc(shareUrl(p))}" data-pname="${esc(p.name)}">📤 分享</button></div>
       <p class="note" id="pmsg" role="status"></p></div>
     <p class="note">等級顯示為「目前等級 / 目前大本營的上限」，綠色代表已升滿。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>
     ${secs.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {
@@ -576,7 +612,6 @@ function faqView() {
     ["中文名稱為什麼跟遊戲裡不一樣？", "中文名稱是對照翻譯，大部分和遊戲一致，少數可能略有不同。新推出的兵種或建築，會先顯示英文名稱。"],
     ["「我的大本營」和「月卡折扣」怎麼用？", "在兵種或建築頁按「−」「+」調成你的大本營等級，表中升不到的等級會變淡；選擇月卡折扣後，所有費用和時間會自動打折。"],
     ["「我的升級進度」怎麼用？", `在遊戲設定裡匯出村莊資料（會複製到剪貼簿），打開<a href="${BASE}progress/">我的升級進度</a>按「從剪貼簿貼上」，就會列出目前的大本營還有哪些東西沒升滿，以及建築工人、實驗室還要多久。資料只存在你的瀏覽器，不會上傳。`],
-    ["「玩家查詢」怎麼用？", `打開<a href="${BASE}player/">玩家查詢</a>，輸入遊戲裡的玩家標籤（點自己的頭像，名字下面那串 # 開頭的代碼），就會讀取英雄、裝備、兵種、法術的等級，並顯示目前的大本營還能升到幾級。資料來自 Supercell 官方 API，網站會記住你的標籤，下次打開自動更新。官方 API 沒有建築資料，建築請用「我的升級進度」。`],
     ["可以像 App 一樣使用嗎？", "可以。iPhone 用 Safari 打開本站，按「分享」→「加入主畫面」，之後從主畫面打開就是全螢幕，跟 App 一樣。Android 用 Chrome 打開，按右上角選單 →「加到主畫面」。"],
     ["需要付費或登入嗎？", "不用。完全免費，不需要帳號。"],
     ["這是官方網站嗎？", "不是。本站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href=\"https://www.supercell.com/fan-content-policy\" target=\"_blank\" rel=\"noopener\">www.supercell.com/fan-content-policy</a>."],
@@ -669,6 +704,14 @@ function render() {
   if (PAGE_ITEM === "licenses") { v.innerHTML = licensesView() + footer(); return; }
   if (PAGE_ITEM === "progress") { v.innerHTML = progressView(mine) + footer(); return; }
   if (PAGE_ITEM === "player") {
+    // 從分享連結進來、而且不是自己的標籤：顯示對方的資料，不動自己存的資料
+    const want = linkTag();
+    if (want && (!player || player.tag !== want)) {
+      const ok = viewing && viewing.tag === want;
+      v.innerHTML = playerView(ok ? viewing : null, want) + footer();
+      if (!ok) playerFetch(want, false, true);
+      return;
+    }
     v.innerHTML = playerView(player) + footer();
     if (player && Date.now() - player.at > PLAYER_STALE) playerFetch(player.tag, true);
     return;
@@ -737,10 +780,45 @@ $("#view").addEventListener("submit", e => {
   e.preventDefault();
   const tag = $("[data-ptag]", f).value.trim();
   $("[data-ptag]", f).blur();
-  if (tag) playerFetch(tag); else $("[data-ptag]", f).focus();
+  if (!tag) { $("[data-ptag]", f).focus(); return; }
+  if (location.search) history.replaceState(null, "", location.pathname);  // 自己查詢：離開分享連結的畫面
+  playerFetch(tag);
+});
+// 查詢紀錄的清單：點查詢欄位或打字時出現，離開欄位或按 Esc 收起來
+$("#view").addEventListener("focusin", e => { const i = e.target.closest("[data-ptag]"); if (i) { delete i.dataset.typed; histShow(i); i.select(); } });
+$("#view").addEventListener("input", e => { const i = e.target.closest("[data-ptag]"); if (i) { i.dataset.typed = "1"; histShow(i); } });
+$("#view").addEventListener("focusout", e => {
+  const i = e.target.closest("[data-ptag]");
+  if (i) i.parentElement.querySelector(".phist").innerHTML = "";
+});
+$("#view").addEventListener("keydown", e => {
+  const i = e.target.closest("[data-ptag]");
+  if (i && e.key === "Escape") i.parentElement.querySelector(".phist").innerHTML = "";
+});
+// 用 pointerdown：比輸入框失去焦點更早觸發，清單才不會先被收起來
+$("#view").addEventListener("pointerdown", e => {
+  const h = e.target.closest(".ph");
+  if (!h) return;
+  e.preventDefault();
+  const inp = h.closest(".pbox").querySelector("[data-ptag]");
+  const del = e.target.closest("[data-hdel]");
+  if (del) { hist = hist.filter(x => x.tag !== del.dataset.hdel); histSave(); histShow(inp); return; }
+  inp.value = h.dataset.htag;
+  h.closest("form").requestSubmit();
 });
 $("#view").addEventListener("click", e => {
-  if (e.target.closest("[data-prefresh]") && player) playerFetch(player.tag);
+  const r = e.target.closest("[data-prefresh]");
+  if (r) { const p = r.dataset.prefresh ? viewing : player; if (p) playerFetch(p.tag, false, !!r.dataset.prefresh); }
+  // 分享：手機跳出分享選單（LINE、Messenger…），電腦直接複製連結
+  const s = e.target.closest("[data-pshare]");
+  if (s) {
+    const url = s.dataset.pshare, msg = $("#pmsg");
+    if (navigator.share && matchMedia("(pointer: coarse)").matches)
+      navigator.share({ title: `${s.dataset.pname} 的部落衝突等級`, url }).catch(() => {});
+    else if (navigator.clipboard && navigator.clipboard.writeText)
+      navigator.clipboard.writeText(url).then(() => { msg.textContent = "已複製連結，貼給朋友就能看到。"; }, () => { msg.textContent = url; });
+    else msg.textContent = url;
+  }
   const clr = e.target.closest("[data-pclear]");
   if (clr && !clr.dataset.armed) { clr.dataset.armed = "1"; clr.textContent = "確定清除？"; return; }
   if (clr) {

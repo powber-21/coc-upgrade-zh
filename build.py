@@ -692,6 +692,8 @@ def write_site(data):
     ver = hashlib.sha1((data_js + app_js + css).encode()).hexdigest()[:8]
     for name, text in (("data.js", data_js), ("app.js", app_js), ("styles.css", css)):
         open(os.path.join(OUT, name), "w", encoding="utf8").write(text)
+    # 玩家查詢名稱旁的經驗等級星星（遊戲圖示，來自 Clash of Clans Wiki 的 XP.png）
+    shutil.copy(os.path.join(HERE, "src/xp.webp"), os.path.join(OUT, "xp.webp"))
     os.makedirs(os.path.join(OUT, "img"))
     for name, content in IMAGES.items():
         open(os.path.join(OUT, name), "wb").write(content)
