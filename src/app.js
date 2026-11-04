@@ -564,12 +564,12 @@ function playerView(p, want = "") {
   crumbs([["玩家查詢"]]);
   const isView = !!p && p === viewing;
   const head = `<div class="intro"><h1>玩家查詢</h1><p>輸入遊戲裡的玩家標籤，自動讀取英雄、裝備、兵種、法術的等級，以及目前的大本營還能升到幾級。</p></div>`;
-  const form = msg => `<form class="paste" data-pform>
-      <div class="prow"><div class="pbox"><input class="ptag" data-ptag value="${esc(p ? p.tag : want)}" placeholder="例如 #2PYLQ8RG" aria-label="玩家標籤"
+  const form = (msg, val) => `<form class="paste" data-pform>
+      <div class="prow"><div class="pbox"><input class="ptag" data-ptag value="${esc(val)}" placeholder="例如 #2PYLQ8RG" aria-label="玩家標籤"
         autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="search"><div class="phist" role="listbox" aria-label="查詢紀錄"></div></div>
         <button type="submit" class="btn">查詢</button></div>
       ${msg ? `<p class="note" id="pmsg" role="status"></p>` : ""}</form>`;
-  if (!p) return head + form(true) + `<p class="note">玩家標籤在遊戲裡點自己的頭像打開個人資料，名字下面那串 # 開頭的代碼。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>`;
+  if (!p) return head + form(true, want) + `<p class="note">玩家標籤在遊戲裡點自己的頭像打開個人資料，名字下面那串 # 開頭的代碼。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>`;
   const hallOf = it => it.base === "builder" ? p.builderHallLevel : p.townHallLevel;
   const secs = PLAYER_GROUPS.map(key => {
     const g = DATA.groups.find(x => x.key === key);
@@ -580,13 +580,13 @@ function playerView(p, want = "") {
     return { title: (g.base === "builder" ? "建築大師基地・" : "") + g.zh, items, lv };
   }).filter(s => s.items.length);
   return head + `${isView ? `<div class="viewing">👀 正在查看分享的資料・<a href="${BASE}player/">${player ? "回到我的資料" : "查詢我自己"}</a></div>` : ""}
+    ${form(false, "")}
     <div class="panel">
       <div class="row"><div class="pwho"><span class="xp" title="經驗等級"><img src="${BASE}xp.webp" alt="經驗等級"><b>${p.expLevel}</b></span>
         <div><b class="pname">${esc(p.name)}</b><span class="pid">${esc(p.tag)}</span></div></div>
         ${isView ? "" : `<button type="button" class="linkbtn clr" data-pclear>清除</button>`}</div>
       <div class="say">大本營<b class="hl">${p.townHallLevel}</b>級${p.builderHallLevel ? `・建築大師<b>${p.builderHallLevel}</b>級` : ""}</div>
-      <div class="row"><div class="say">更新於 ${playerDate(p)}・<button type="button" class="linkbtn" data-prefresh="${isView ? "view" : ""}">重新查詢</button></div>
-        <button type="button" class="btn pshare" data-pshare="${esc(shareUrl(p))}" data-pname="${esc(p.name)}">📤 分享</button></div>
+      <div class="row"><div class="say">更新於 ${playerDate(p)}・<button type="button" class="linkbtn" data-prefresh="${isView ? "view" : ""}">重新查詢</button>・<button type="button" class="linkbtn" data-pshare="${esc(shareUrl(p))}" data-pname="${esc(p.name)}">分享</button></div></div>
       <p class="note" id="pmsg" role="status"></p></div>
     <p class="note">等級顯示為「目前等級 / 目前大本營的上限」，綠色代表已升滿，淡色代表要更高的大本營才能解鎖。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>
     ${secs.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {
@@ -602,8 +602,7 @@ function playerView(p, want = "") {
       const req = it.attrs.find(a => UNLOCK_KEYS.includes(a[0]) && typeof a[1] === "number");
       if (req) return tile(it, `<div class="lv lock">${esc(label(req[0]))}${req[1]}級</div>`);
       return tile(it, `<div class="lv">0<small> / ${cap}</small></div>`);
-    }).join("")}</div></section>`).join("")}
-    <details class="again"><summary>查詢其他玩家</summary>${form(false)}</details>`;
+    }).join("")}</div></section>`).join("")}`;
 }
 
 function searchView(q) {
