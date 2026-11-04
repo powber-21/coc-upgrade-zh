@@ -484,6 +484,8 @@ const BY_EN = {};
 for (const g of PLAYER_GROUPS) for (const id of (DATA.groups.find(x => x.key === g) || { items: [] }).items) BY_EN[`${DATA.items[id].base}|${DATA.items[id].en}`] = DATA.items[id];
 const apiItem = x => BY_EN[`${x.village === "builderBase" ? "builder" : "home"}|${x.name}`];
 const playerAll = p => [...p.heroes, ...p.heroEquipment, ...p.troops, ...p.spells];
+// 解鎖需要的建築等級（屬性名稱的中文在 zh.json，例如「需法術工廠」）
+const UNLOCK_KEYS = ["barrackLevelRequired", "spellFactoryLevelRequired", "workshopLevelRequired", "petHouseLevelRequired", "builderBarracksRequired"];
 const PLAYER_STALE = 5 * 60e3;  // 超過 5 分鐘的資料，打開頁面時自動重新查詢
 
 let player = null;
@@ -573,7 +575,8 @@ function playerView(p, want = "") {
     const g = DATA.groups.find(x => x.key === key);
     const lv = {};
     for (const x of playerAll(p)) { const it = apiItem(x); if (it && it.group === key) lv[it.id] = x; }
-    const items = byHall(g.items.filter(id => lv[id]).map(id => DATA.items[id]));
+    // API 只有已解鎖的項目；沒解鎖的也列出來（有大本營上限資料的才列）
+    const items = byHall(g.items.filter(id => lv[id] || DATA.items[id].hallMax).map(id => DATA.items[id]));
     return { title: (g.base === "builder" ? "建築大師基地・" : "") + g.zh, items, lv };
   }).filter(s => s.items.length);
   return head + `${isView ? `<div class="viewing">👀 正在查看分享的資料・<a href="${BASE}player/">${player ? "回到我的資料" : "查詢我自己"}</a></div>` : ""}
@@ -585,10 +588,20 @@ function playerView(p, want = "") {
       <div class="row"><div class="say">更新於 ${playerDate(p)}・<button type="button" class="linkbtn" data-prefresh="${isView ? "view" : ""}">重新查詢</button></div>
         <button type="button" class="btn pshare" data-pshare="${esc(shareUrl(p))}" data-pname="${esc(p.name)}">📤 分享</button></div>
       <p class="note" id="pmsg" role="status"></p></div>
-    <p class="note">等級顯示為「目前等級 / 目前大本營的上限」，綠色代表已升滿。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>
+    <p class="note">等級顯示為「目前等級 / 目前大本營的上限」，綠色代表已升滿，淡色代表要更高的大本營才能解鎖。官方 API 沒有建築資料，建築請用<a href="${BASE}progress/">我的升級進度</a>。</p>
     ${secs.map(s => `<section><h2 class="group">${esc(s.title)}</h2><div class="grid">${s.items.map(it => {
-      const x = s.lv[it.id], cap = (it.hallMax && it.hallMax[hallOf(it) - 1]) || x.maxLevel;
-      return tile(it, `<div class="lv${x.level >= cap ? " done" : ""}">${x.level}<small> / ${cap}</small></div>`);
+      const x = s.lv[it.id], cap = (it.hallMax && it.hallMax[hallOf(it) - 1]) || 0;
+      if (x) {
+        const c = cap || x.maxLevel;
+        return tile(it, `<div class="lv${x.level >= c ? " done" : ""}">${x.level}<small> / ${c}</small></div>`);
+      }
+      // 沒解鎖：目前大本營還不能用 → 淡色「N本解鎖」；能用但沒有的裝備（活動、商店取得）→「未取得」；其他 → 0 級
+      if (!cap) return tile(it, `<div class="lv lock">${unlockAt(it) + 1}本解鎖</div>`, true);
+      if (it.group === "home/hero-equipment") return tile(it, `<div class="lv lock">未取得</div>`);
+      // 大本營夠了但還沒解鎖，通常是訓練營、法術工廠這類建築等級不夠：顯示解鎖條件
+      const req = it.attrs.find(a => UNLOCK_KEYS.includes(a[0]) && typeof a[1] === "number");
+      if (req) return tile(it, `<div class="lv lock">${esc(label(req[0]))}${req[1]}級</div>`);
+      return tile(it, `<div class="lv">0<small> / ${cap}</small></div>`);
     }).join("")}</div></section>`).join("")}
     <details class="again"><summary>查詢其他玩家</summary>${form(false)}</details>`;
 }

@@ -427,6 +427,7 @@ footer a:hover { color: var(--link); }  /* 頁尾連結平常跟文字同色，�
 .viewing { padding: 10px 14px; border-radius: 12px; background: color-mix(in srgb, var(--gold) 18%, var(--surface)); border: 2px solid var(--gold); font-weight: 700; max-width: 560px; }
 .tile .lv small { font-family: var(--font-body); font-size: 12px; color: var(--muted); }
 .tile .lv.done { color: var(--mine); }
+.tile .lv.lock { text-wrap: balance; font-family: var(--font-body); font-size: 12px; font-weight: 700; color: var(--muted); }
 .btn { height: 48px; border: 0; border-radius: 12px; background: var(--gold); color: #1c2128; font-family: var(--font-body); font-size: 16px; font-weight: 900; box-shadow: 0 3px 0 var(--gold-ledge); }
 .btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--gold-ledge); }
 .panel .say.err { color: #d1453b; font-weight: 700; }
