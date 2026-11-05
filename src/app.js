@@ -579,7 +579,7 @@ function playerView(p, want = "") {
     const items = byHall(g.items.filter(id => lv[id] || DATA.items[id].hallMax).map(id => DATA.items[id]));
     return { title: (g.base === "builder" ? "建築大師基地・" : "") + g.zh, items, lv };
   }).filter(s => s.items.length);
-  return head + `${isView ? `<div class="viewing">👀 正在查看分享的資料・<a href="${BASE}player/">${player ? "回到我的資料" : "查詢我自己"}</a></div>` : ""}
+  return head + `
     ${form(false, "")}
     <div class="panel">
       <div class="row"><div class="pwho"><span class="xp" title="經驗等級"><img src="${BASE}xp.webp" alt="經驗等級"><b>${p.expLevel}</b></span>
