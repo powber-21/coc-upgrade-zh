@@ -357,7 +357,7 @@ function calcOut(it, t, ti, cur, goal, hallText) {
 // 我的升級進度：貼上遊戲匯出的村莊資料（JSON），算出每個工作隊列還要多久才能把目前的大本營升滿
 // 資料只存在使用者自己的瀏覽器（localStorage），不會上傳
 const QUEUES = [
-  ["builder", "建築工人", ["home/defenses", "home/traps", "home/walls", "home/resource-buildings", "home/army-buildings", "home/other", "home/guardians"]],
+  ["builder", "建築", ["home/defenses", "home/traps", "home/walls", "home/resource-buildings", "home/army-buildings", "home/other", "home/guardians"]],
   // 英雄升級也要用建築工人，但時間很長，另外列出來比較好看
   ["hero", "英雄", ["home/heroes"]],
   ["lab", "實驗室", ["home/troops", "home/spells", "home/siege-machines"]],
@@ -625,7 +625,7 @@ function faqView() {
     ["多久更新一次？", "每天自動檢查一次，資料來源一更新，本站隔天就會跟著更新。"],
     ["中文名稱為什麼跟遊戲裡不一樣？", "中文名稱是對照翻譯，大部分和遊戲一致，少數可能略有不同。新推出的兵種或建築，會先顯示英文名稱。"],
     ["「我的大本營」和「月卡折扣」怎麼用？", "在兵種或建築頁按「−」「+」調成你的大本營等級，表中升不到的等級會變淡；選擇月卡折扣後，所有費用和時間會自動打折。"],
-    ["「我的升級進度」怎麼用？", `在遊戲設定裡匯出村莊資料（會複製到剪貼簿），打開<a href="${BASE}progress/">我的升級進度</a>按「從剪貼簿貼上」，就會列出目前的大本營還有哪些東西沒升滿，以及建築工人、實驗室還要多久。資料只存在你的瀏覽器，不會上傳。`],
+    ["「我的升級進度」怎麼用？", `在遊戲設定裡匯出村莊資料（會複製到剪貼簿），打開<a href="${BASE}progress/">我的升級進度</a>按「從剪貼簿貼上」，就會列出目前的大本營還有哪些東西沒升滿，以及建築、英雄、實驗室還要多久。資料只存在你的瀏覽器，不會上傳。`],
     ["可以像 App 一樣使用嗎？", "可以。iPhone 用 Safari 打開本站，按「分享」→「加入主畫面」，之後從主畫面打開就是全螢幕，跟 App 一樣。Android 用 Chrome 打開，按右上角選單 →「加到主畫面」。"],
     ["需要付費或登入嗎？", "不用。完全免費，不需要帳號。"],
     ["這是官方網站嗎？", "不是。本站為非官方粉絲內容，未經 Supercell 認可。This material is unofficial and is not endorsed by Supercell. For more information see Supercell's Fan Content Policy: <a href=\"https://www.supercell.com/fan-content-policy\" target=\"_blank\" rel=\"noopener\">www.supercell.com/fan-content-policy</a>."],
