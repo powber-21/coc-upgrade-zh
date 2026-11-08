@@ -357,7 +357,9 @@ function calcOut(it, t, ti, cur, goal, hallText) {
 // 我的升級進度：貼上遊戲匯出的村莊資料（JSON），算出每個工作隊列還要多久才能把目前的大本營升滿
 // 資料只存在使用者自己的瀏覽器（localStorage），不會上傳
 const QUEUES = [
-  ["builder", "建築工人", ["home/defenses", "home/traps", "home/walls", "home/resource-buildings", "home/army-buildings", "home/other", "home/guardians", "home/heroes"]],
+  ["builder", "建築工人", ["home/defenses", "home/traps", "home/walls", "home/resource-buildings", "home/army-buildings", "home/other", "home/guardians"]],
+  // 英雄升級也要用建築工人，但時間很長，另外列出來比較好看
+  ["hero", "英雄", ["home/heroes"]],
   ["lab", "實驗室", ["home/troops", "home/spells", "home/siege-machines"]],
   ["pet", "戰寵小屋", ["home/pets"]],
 ];
@@ -465,7 +467,7 @@ function progressView(d) {
       <hr><div class="lbl">月卡折扣</div>${passBar()}</div>
     <div class="qsum">${qs.map(q => `<div class="panel"><div class="lbl">${q.zh}</div>
       ${q.total ? `<div class="big">⏱ ${fmtD(q.est)}</div>
-        <div class="say">${q.key === "builder" ? `${p.workers} 位工人同時升級的估計。全部加起來 ${fmtD(q.total)}。` : "一次只能升級一個。"}</div>`
+        <div class="say">${q.key === "builder" ? `${p.workers} 位工人同時升級的估計。全部加起來 ${fmtD(q.total)}。` : q.key === "hero" ? "每位英雄依序升級加起來的時間，升級時會佔用一位建築工人。" : "一次只能升級一個。"}</div>`
         : `<div class="big">✅ 已升滿</div>`}</div>`).join("")}</div>
     ${qs.filter(q => q.rows.length).map(q => `<section><h2 class="group">${q.zh}</h2><div class="todo">${q.rows.map(r =>
       `<a href="${itemHref(r.it.id)}">${img(r.it)}<div><div class="n">${esc(nameOf(r.it))}${r.busy ? `<span class="tag">升級中</span>` : ""}${r.locked ? `<span class="tag off">尚未解鎖</span>` : ""}</div>
