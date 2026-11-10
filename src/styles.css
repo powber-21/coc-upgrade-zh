@@ -449,6 +449,8 @@ td:first-child .mycnt { position: absolute; right: 6px; top: 50%; transform: tra
 .mynote a { color: var(--link); font-weight: 700; }
 .linkbtn.clr { flex: none; color: var(--muted); font-weight: 400; font-size: 14px; }
 .linkbtn.clr[data-armed] { color: #d1453b; font-weight: 900; }
+.todo a.done { opacity: .75; }
+.todo a.done .t { color: var(--mine); font-size: 13px; }
 .todo .tag.off { background: var(--pill); color: var(--muted); }
 
 /* 淺色／深色切換按鈕：淺色時顯示月亮（按了變深色），深色時顯示太陽 */

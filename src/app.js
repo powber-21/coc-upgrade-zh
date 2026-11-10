@@ -423,9 +423,10 @@ function progress(d) {
         if (b.left !== null) busy = true;
         for (let l = b.lv + 1; l <= goal; l++) time += l === b.lv + 1 && b.left !== null ? b.left : secs[l] || 0;
       }
-      if (todo) rows.push({ it, from: Math.min(...list.map(b => b.lv)), goal, todo, time, busy, locked: list.every(b => !b.lv) });
+      // 已升滿的也列出來（排在最後），讓使用者看得到完整清單
+      if (list.length) rows.push({ it, from: Math.min(...list.map(b => b.lv)), goal, todo, n: list.length, time, busy, done: !todo, locked: list.every(b => !b.lv) });
     }
-    rows.sort((a, b) => b.time - a.time);
+    rows.sort((a, b) => a.done - b.done || b.time - a.time);
     const total = rows.reduce((a, r) => a + r.time, 0);
     return { key, zh, rows, total, est: key === "builder" ? total / workers : total };
   });
@@ -470,6 +471,9 @@ function progressView(d) {
         <div class="say">${q.key === "builder" ? `${p.workers} 位工人同時升級的估計。全部加起來 ${fmtD(q.total)}。` : q.key === "hero" ? "每位英雄依序升級加起來的時間，升級時會佔用一位建築工人。" : "一次只能升級一個。"}</div>`
         : `<div class="big">✅ 已升滿</div>`}</div>`).join("")}</div>
     ${qs.filter(q => q.rows.length).map(q => `<section><h2 class="group">${q.zh}</h2><div class="todo">${q.rows.map(r =>
+      r.done ? `<a class="done" href="${itemHref(r.it.id)}">${img(r.it)}<div><div class="n">${esc(nameOf(r.it))}</div>
+        <div class="lvs">Lv ${r.goal}${r.n > 1 ? `・${r.n} 個` : ""}</div></div>
+        <div class="t">✅ 已升滿</div></a>` :
       `<a href="${itemHref(r.it.id)}">${img(r.it)}<div><div class="n">${esc(nameOf(r.it))}${r.busy ? `<span class="tag">升級中</span>` : ""}${r.locked ? `<span class="tag off">尚未解鎖</span>` : ""}</div>
         <div class="lvs">Lv ${r.from} → ${r.goal}${r.todo > 1 ? `・${r.todo} 個` : ""}</div></div>
         <div class="t">${r.time ? fmtD(r.time) : r.locked ? "—" : "不需時間"}</div></a>`).join("")}</div></section>`).join("")}
